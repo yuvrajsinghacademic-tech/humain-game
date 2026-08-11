@@ -1,0 +1,16 @@
+/*
+ * The static canvas is stretched from a 320×180 buffer to the whole viewport with
+ * smoothing off, which is what gives it coarse analogue grain instead of fine digital
+ * noise. It sits below every menu layer and cannot be interacted with.
+ */
+.static {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  z-index: 1;
+  pointer-events: none;
+  image-rendering: pixelated;
+  /* Screen blend keeps it as light-on-black grain rather than a grey wash. */
+  mix-blend-mode: screen;
+}

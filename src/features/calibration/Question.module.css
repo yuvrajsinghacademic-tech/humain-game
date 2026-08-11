@@ -1,0 +1,132 @@
+.question {
+  display: grid;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 34rem;
+  margin: 0 auto;
+}
+
+.head {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.counter {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.28em;
+  color: var(--bone-faint);
+}
+
+.progress {
+  display: block;
+  height: 1px;
+  background: var(--edge);
+}
+
+.progressFill {
+  display: block;
+  height: 100%;
+  background: var(--bone-faint);
+  transition: width var(--step) var(--ease);
+}
+
+.sequence {
+  border: 1px solid var(--edge);
+  background: var(--panel);
+  padding: 1.3rem 1rem;
+  color: var(--bone-dim);
+  overflow-x: auto;
+}
+
+/* --- options ------------------------------------------------------------- */
+
+.options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--edge);
+  border: 1px solid var(--edge);
+}
+
+.option {
+  background: var(--panel);
+  color: var(--bone-dim);
+  padding: clamp(1.8rem, 6vw, 2.8rem) 1rem;
+  min-height: 9rem;
+  display: grid;
+  gap: 0.7rem;
+  justify-items: center;
+  align-content: center;
+  transition: background-color var(--step) var(--ease), color var(--step) var(--ease);
+}
+
+.option:hover:not(:disabled),
+.option:focus-visible:not(:disabled) {
+  background: var(--panel-lift);
+  color: var(--bone);
+}
+
+.option:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.option[data-picked='true'] {
+  background: var(--panel-lift);
+  color: var(--bone);
+  opacity: 1;
+}
+
+.value {
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  color: var(--bone-dim);
+}
+
+/* --- deadline and reward response ---------------------------------------- */
+
+.deadline {
+  height: 1px;
+  background: var(--edge);
+  overflow: hidden;
+}
+
+.deadlineFill {
+  height: 100%;
+  background: var(--red);
+}
+
+.deadlineSpacer {
+  height: 1px;
+}
+
+.response {
+  min-height: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+}
+
+.paid {
+  color: var(--phos);
+}
+
+.unpaid {
+  color: var(--bone-faint);
+}
+
+@media (max-width: 30rem) {
+  .options {
+    grid-template-columns: 1fr;
+  }
+
+  .option {
+    min-height: 6.5rem;
+    padding: 1.5rem 1rem;
+  }
+}

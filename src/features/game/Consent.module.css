@@ -1,0 +1,217 @@
+/*
+ * The consent document.
+ *
+ * A contained full-viewport layout: the overlay is exactly one viewport tall, and the
+ * document inside it is a three-row grid — fixed heading, scrolling reading region,
+ * pinned actions. Nothing here can make the browser page scroll, so the controls are
+ * always where the player left them.
+ *
+ * z-index 200 puts the whole thing above every glitch layer (93–95) and above the CRT
+ * layers (90–92), which is what stops background effects bleeding through the copy.
+ */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  height: 100dvh;
+  max-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: clamp(0.5rem, 2.5vh, 1.75rem) var(--gutter);
+  /* Opaque: the malfunctioning system is behind this, not showing through it. */
+  background: #000000;
+  overflow: hidden;
+}
+
+.document {
+  position: relative;
+  width: 100%;
+  max-width: 34rem;
+  /* Never taller than the space it was given. */
+  max-height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  /* Solid near-black. No translucency, so no glitch can register through it. */
+  background: #050506;
+  border: 1px solid var(--edge);
+}
+
+/* --- heading ------------------------------------------------------------- */
+
+.head {
+  padding: clamp(1rem, 3vw, 1.5rem) clamp(1.1rem, 4vw, 1.9rem) 0.85rem;
+  border-bottom: 1px solid var(--edge);
+  background: #050506;
+}
+
+.title {
+  font-size: 1.0625rem;
+  letter-spacing: 0.02em;
+  color: var(--bone);
+  margin: 0;
+}
+
+/* --- reading region ------------------------------------------------------ */
+
+/*
+ * The only scrollable thing on the screen. On a short viewport this is what moves; on
+ * a roomy desktop the whole document fits and it never scrolls at all.
+ */
+.reading {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: clamp(1rem, 3vw, 1.4rem) clamp(1.1rem, 4vw, 1.9rem);
+  display: grid;
+  gap: 1.05rem;
+  align-content: start;
+  min-height: 0;
+}
+
+.reading:focus-visible {
+  outline: 1px solid var(--edge-live);
+  outline-offset: -1px;
+}
+
+.body {
+  display: grid;
+  gap: 0.8rem;
+  color: var(--bone-dim);
+  font-size: 0.8125rem;
+  line-height: 1.7;
+}
+
+.darry {
+  color: var(--red);
+}
+
+/* A brief red bleed around the name. Colour only — no movement. */
+.darryBleed {
+  text-shadow:
+    -0.04em 0 0 rgba(255, 43, 50, 0.8),
+    0.04em 0 0 rgba(255, 43, 50, 0.45);
+}
+
+/*
+ * The closing line of the supervision paragraph, set slightly apart. One restrained
+ * distortion as it arrives, then left alone permanently.
+ */
+.closing {
+  margin-top: 0.15rem;
+  padding-left: 0.85rem;
+  border-left: 1px solid var(--red-deep);
+  color: var(--bone);
+}
+
+.closingArriving {
+  animation: closing-arrive 380ms steps(4) 1;
+}
+
+@keyframes closing-arrive {
+  0% { transform: translateX(-4px); opacity: 0.5; letter-spacing: 0.06em; }
+  40% { transform: translateX(3px); opacity: 1; letter-spacing: -0.01em; }
+  70% { transform: translateX(-1px); opacity: 0.85; }
+  100% { transform: none; opacity: 1; letter-spacing: normal; }
+}
+
+/* --- warning ------------------------------------------------------------- */
+
+/*
+ * Weight from structure, not from a coloured box: two hairline red rules and a red
+ * heading over clean black. No fill, no gradient, no glow — the copy has to stay
+ * readable through every glitch, and a tinted ground was what made it muddy.
+ */
+.warning {
+  border-top: 1px solid var(--red-deep);
+  border-bottom: 1px solid var(--red-deep);
+  background: transparent;
+  padding: 0.95rem 0 1rem;
+  display: grid;
+  gap: 0.6rem;
+  color: var(--bone-dim);
+  font-size: 0.75rem;
+  line-height: 1.65;
+}
+
+.warningTitle {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.3em;
+  color: var(--red);
+  margin: 0;
+}
+
+/* --- actions ------------------------------------------------------------- */
+
+/*
+ * Pinned to the bottom of the document and fully opaque, so warning text scrolls
+ * behind it rather than through it. Never tinted red.
+ */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  padding: clamp(0.8rem, 2.5vw, 1.1rem) clamp(1.1rem, 4vw, 1.9rem);
+  border-top: 1px solid var(--edge);
+  background: #050506;
+}
+
+/*
+ * One controlled border and one clear focus ring. The global focus outline is
+ * suppressed here and replaced with a single bone ring, which is what removes the
+ * doubled red outline the previous version drew.
+ */
+.primary,
+.secondary {
+  flex: 1 1 auto;
+  min-height: 46px;
+  padding: 0.8rem 1.2rem;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  border: 1px solid var(--edge-live);
+  background: transparent;
+  color: var(--bone);
+  transition: border-color var(--step) var(--ease), background-color var(--step) var(--ease);
+}
+
+.primary {
+  border-color: var(--bone-faint);
+}
+
+.secondary {
+  flex: 0 0 auto;
+  color: var(--bone-faint);
+}
+
+.primary:hover,
+.secondary:hover {
+  border-color: var(--bone);
+  background: rgba(228, 228, 226, 0.05);
+  color: var(--bone);
+}
+
+.primary:focus-visible,
+.secondary:focus-visible {
+  outline: 2px solid var(--bone);
+  outline-offset: 2px;
+  border-color: var(--bone);
+}
+
+@media (max-width: 30rem) {
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .secondary {
+    flex: 1 1 auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .closingArriving {
+    animation: none;
+  }
+}

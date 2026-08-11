@@ -1,0 +1,73 @@
+.menu {
+  position: relative;
+  z-index: 5;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: calc(var(--gutter) * 2) var(--gutter);
+}
+
+.inner {
+  display: grid;
+  /* Deliberate air between the title and the options. */
+  gap: clamp(3rem, 11vh, 6.5rem);
+  justify-items: center;
+  text-align: center;
+}
+
+.title {
+  margin: 0;
+  line-height: 1;
+  /*
+   * A faint black halo so the title stays legible over the static without needing a
+   * panel behind it.
+   */
+  text-shadow: 0 0 1.5rem #000000, 0 0 3rem #000000;
+}
+
+/* --- the options --------------------------------------------------------- */
+
+.nav {
+  display: grid;
+  gap: 0.55rem;
+  justify-items: center;
+  min-width: min(14rem, 70vw);
+}
+
+.item {
+  width: 100%;
+  min-height: 46px;
+  padding: 0.8rem 2rem;
+  border: 1px solid transparent;
+  background: rgba(0, 0, 0, 0.55);
+  color: var(--bone-dim);
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.28em;
+  transition: color var(--step) var(--ease), border-color var(--step) var(--ease),
+    background-color var(--step) var(--ease), letter-spacing var(--step) var(--ease);
+}
+
+.item:hover,
+.item:focus-visible {
+  color: var(--bone);
+  border-color: var(--edge-live);
+  background: rgba(0, 0, 0, 0.8);
+  letter-spacing: 0.32em;
+}
+
+.item:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item {
+    transition: none;
+  }
+
+  .item:hover,
+  .item:focus-visible {
+    letter-spacing: 0.28em;
+  }
+}

@@ -1,0 +1,13 @@
+.stack {
+  display: grid;
+  gap: 1.6rem;
+  max-width: var(--measure);
+}
+
+.body {
+  display: grid;
+  gap: 0.6rem;
+  color: var(--bone-dim);
+  font-size: 0.875rem;
+  line-height: 1.65;
+}

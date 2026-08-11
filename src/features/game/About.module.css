@@ -1,0 +1,11 @@
+.body {
+  display: grid;
+  gap: 0.85rem;
+  color: var(--bone-dim);
+  font-size: 0.8125rem;
+  line-height: 1.7;
+}
+
+.darry {
+  color: var(--red);
+}

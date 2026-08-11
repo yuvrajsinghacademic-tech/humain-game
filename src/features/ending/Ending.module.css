@@ -1,0 +1,143 @@
+.loading {
+  display: grid;
+  gap: 1.2rem;
+  justify-items: center;
+  width: 100%;
+  max-width: 18rem;
+  margin: 0 auto;
+}
+
+.loadingLine {
+  font-family: var(--mono);
+  font-size: 0.9375rem;
+  letter-spacing: 0.06em;
+  color: var(--bone-dim);
+}
+
+/* A single slow sweep. 1.8s per cycle — nowhere near a flash. */
+.bar {
+  width: 100%;
+  height: 1px;
+  background: var(--edge);
+  overflow: hidden;
+  position: relative;
+}
+
+.bar::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 30%;
+  background: var(--red);
+  animation: crawl 1800ms linear infinite;
+}
+
+@keyframes crawl {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(433%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar::after {
+    animation: none;
+    width: 100%;
+    opacity: 0.45;
+  }
+}
+
+/* --- the reveal ---------------------------------------------------------- */
+
+.ending {
+  display: grid;
+  gap: 1.1rem;
+  justify-items: center;
+  text-align: center;
+  min-height: 60dvh;
+  align-content: center;
+}
+
+.unfortunately {
+  font-family: var(--mono);
+  font-size: clamp(1.25rem, 5vw, 1.75rem);
+  color: var(--bone-dim);
+  letter-spacing: 0.01em;
+}
+
+.verdict {
+  font-family: var(--mono);
+  font-size: clamp(1.6rem, 8.5vw, 3.25rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--bone);
+}
+
+.numbers {
+  display: grid;
+  gap: 0.4rem;
+  width: 100%;
+  max-width: 22rem;
+  margin-top: 1.4rem;
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--edge);
+  padding-bottom: 0.4rem;
+}
+
+.who {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.24em;
+  color: var(--bone-faint);
+}
+
+.pct {
+  font-family: var(--mono);
+  font-size: clamp(1.5rem, 7vw, 2.25rem);
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--bone);
+}
+
+.note {
+  margin-top: 1.1rem;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  line-height: 1.65;
+  color: var(--bone-dim);
+  text-align: left;
+}
+
+.again {
+  margin-top: 2rem;
+  display: grid;
+  gap: 0.8rem;
+  justify-items: center;
+}
+
+.againButton {
+  min-height: 46px;
+  padding: 0.85rem 2rem;
+  border: 1px solid var(--bone-faint);
+  background: transparent;
+  color: var(--bone);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.24em;
+  transition: border-color var(--step) var(--ease), background-color var(--step) var(--ease);
+}
+
+.againButton:hover {
+  border-color: var(--bone);
+  background: rgba(228, 228, 226, 0.05);
+}
+
+.againButton:focus-visible {
+  outline: 2px solid var(--bone);
+  outline-offset: 3px;
+  border-color: var(--bone);
+}

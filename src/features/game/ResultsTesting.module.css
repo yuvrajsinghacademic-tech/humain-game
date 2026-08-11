@@ -1,0 +1,20 @@
+.stack {
+  display: grid;
+  gap: 1.6rem;
+  justify-items: center;
+  text-align: center;
+}
+
+.line {
+  font-family: var(--mono);
+  font-size: clamp(1rem, 4vw, 1.25rem);
+  letter-spacing: 0.02em;
+  color: var(--bone-dim);
+}
+
+.ready {
+  font-family: var(--mono);
+  font-size: clamp(1.35rem, 6vw, 2rem);
+  letter-spacing: -0.01em;
+  color: var(--bone);
+}

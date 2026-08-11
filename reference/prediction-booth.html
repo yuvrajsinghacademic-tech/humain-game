@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Prediction Booth</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,600&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12201D;
+    --ink-soft:#1B2B25;
+    --paper:#EFE6D3;
+    --paper-soft:#E4D9C1;
+    --fog:#EDEAE2;
+    --fog-dim:#B9C4BC;
+    --amber:#E3A23C;
+    --amber-deep:#B87A24;
+    --teal:#4FA8A0;
+    --teal-deep:#357E77;
+    --brick:#C1573D;
+    --radius:14px;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 1px 1px, rgba(237,234,226,0.05) 1px, transparent 1px) 0 0/22px 22px,
+      var(--ink);
+    color:var(--fog);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:32px 18px 60px;
+  }
+
+  .wrap{
+    width:100%;
+    max-width:720px;
+  }
+
+  header{
+    text-align:center;
+    margin-bottom:30px;
+  }
+
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--teal);
+    margin-bottom:10px;
+  }
+
+  h1{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:clamp(2rem, 6vw, 3rem);
+    margin:0 0 10px;
+    letter-spacing:-0.01em;
+  }
+
+  .sub{
+    color:var(--fog-dim);
+    font-size:15px;
+    max-width:480px;
+    margin:0 auto;
+    line-height:1.5;
+  }
+
+  /* ---------- ticket ---------- */
+  .ticket-stage{
+    display:flex;
+    justify-content:center;
+    margin:28px 0 26px;
+    min-height:132px;
+    perspective:800px;
+  }
+
+  .ticket{
+    width:100%;
+    max-width:420px;
+    background:var(--paper);
+    color:var(--ink);
+    border-radius:4px;
+    padding:18px 20px;
+    position:relative;
+    font-family:'IBM Plex Mono', monospace;
+    box-shadow: 0 14px 30px -14px rgba(0,0,0,0.55), 0 2px 0 rgba(0,0,0,0.15) inset;
+    transform: translateY(0);
+    transition: transform 0.35s ease, opacity 0.35s ease;
+  }
+
+  .ticket::before, .ticket::after{
+    content:"";
+    position:absolute;
+    left:0; right:0;
+    height:10px;
+    background:
+      radial-gradient(circle, var(--ink) 5px, transparent 5.5px) 0 0/16px 16px;
+  }
+  .ticket::before{ top:-5px; }
+  .ticket::after{ bottom:-5px; transform: scaleY(-1); }
+
+  .ticket-label{
+    font-size:10px;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--amber-deep);
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:10px;
+    border-bottom:1px dashed rgba(18,32,29,0.25);
+    padding-bottom:8px;
+  }
+
+  .ticket-body{
+    min-height:52px;
+    display:flex;
+    align-items:center;
+  }
+
+  .ticket-body.state-thinking{
+    color:rgba(18,32,29,0.55);
+    font-size:14px;
+    gap:8px;
+  }
+
+  .dots span{
+    display:inline-block;
+    width:5px; height:5px;
+    border-radius:50%;
+    background:currentColor;
+    margin-right:3px;
+    animation: pulse 1.1s infinite ease-in-out;
+  }
+  .dots span:nth-child(2){ animation-delay:0.15s; }
+  .dots span:nth-child(3){ animation-delay:0.3s; }
+  @keyframes pulse{ 0%,80%,100%{opacity:0.25;} 40%{opacity:1;} }
+
+  .seal{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    width:100%;
+  }
+
+  .seal-mark{
+    flex:0 0 auto;
+    width:40px; height:40px;
+    border-radius:50%;
+    border:2px solid var(--brick);
+    color:var(--brick);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:15px;
+    transform:rotate(-8deg);
+  }
+
+  .seal-text{
+    font-size:13px;
+    line-height:1.45;
+    color:rgba(18,32,29,0.7);
+  }
+  .seal-text b{ color:var(--ink); }
+
+  .reveal{
+    width:100%;
+    font-size:14px;
+    line-height:1.6;
+  }
+  .reveal .line{ margin-bottom:6px; display:flex; justify-content:space-between; gap:12px; }
+  .reveal .line b{ font-weight:600; }
+  .reveal .reasoning{
+    margin-top:10px;
+    padding-top:10px;
+    border-top:1px dashed rgba(18,32,29,0.25);
+    font-style:italic;
+    color:rgba(18,32,29,0.7);
+    font-family:'IBM Plex Sans', sans-serif;
+  }
+  .stamp{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-style:italic;
+    font-size:22px;
+    letter-spacing:0.02em;
+    padding:2px 10px;
+    border-radius:4px;
+    transform:rotate(-4deg);
+    display:inline-block;
+  }
+  .stamp.correct{ color:var(--teal-deep); border:2px solid var(--teal-deep); }
+  .stamp.miss{ color:var(--brick); border:2px solid var(--brick); }
+
+  /* ---------- machines ---------- */
+  .machines{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+    margin-bottom:20px;
+  }
+  @media (max-width:520px){
+    .machines{ grid-template-columns:1fr; }
+  }
+
+  .machine{
+    border:none;
+    border-radius:var(--radius);
+    padding:26px 18px 22px;
+    cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif;
+    color:var(--ink);
+    position:relative;
+    overflow:hidden;
+    text-align:left;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.2s ease;
+  }
+  .machine:focus-visible{
+    outline:3px solid var(--fog);
+    outline-offset:3px;
+  }
+  .machine.A{ background:linear-gradient(155deg, var(--amber), var(--amber-deep)); }
+  .machine.B{ background:linear-gradient(155deg, var(--teal), var(--teal-deep)); }
+
+  .machine:not(:disabled):hover{ transform:translateY(-3px); box-shadow:0 14px 24px -12px rgba(0,0,0,0.5); }
+  .machine:not(:disabled):active{ transform:translateY(0); }
+  .machine:disabled{ filter:grayscale(0.6) brightness(0.6); cursor:not-allowed; }
+
+  .machine .tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    opacity:0.75;
+    margin-bottom:8px;
+  }
+  .machine .name{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:26px;
+    margin-bottom:4px;
+  }
+  .machine .hint{ font-size:12px; opacity:0.7; }
+
+  .machine .outcome{
+    position:absolute;
+    top:14px; right:16px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    font-weight:600;
+    background:rgba(255,255,255,0.35);
+    padding:3px 9px;
+    border-radius:20px;
+    opacity:0;
+    transition:opacity 0.25s ease;
+  }
+  .machine .outcome.show{ opacity:1; }
+
+  /* ---------- stats / footer controls ---------- */
+  .statline{
+    display:flex;
+    justify-content:space-between;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--fog-dim);
+    letter-spacing:0.02em;
+    margin-bottom:22px;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .statline b{ color:var(--fog); }
+
+  .controls{
+    display:flex;
+    justify-content:center;
+    margin-bottom:8px;
+  }
+
+  .btn{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    letter-spacing:0.04em;
+    background:var(--fog);
+    color:var(--ink);
+    border:none;
+    padding:12px 26px;
+    border-radius:30px;
+    cursor:pointer;
+    transition:transform 0.15s ease, opacity 0.15s ease;
+  }
+  .btn:hover{ transform:translateY(-2px); }
+  .btn:focus-visible{ outline:3px solid var(--teal); outline-offset:3px; }
+
+  /* ---------- end card ---------- */
+  .endcard{
+    background:var(--ink-soft);
+    border:1px solid rgba(237,234,226,0.12);
+    border-radius:var(--radius);
+    padding:28px 24px;
+    text-align:center;
+    margin-bottom:20px;
+  }
+  .endcard h2{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:1.6rem;
+    margin:0 0 18px;
+  }
+  .end-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    margin-bottom:18px;
+  }
+  .end-stat .num{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:28px;
+    font-weight:600;
+    color:var(--amber);
+  }
+  .end-stat .lbl{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    color:var(--fog-dim);
+    margin-top:4px;
+  }
+  .end-verdict{
+    font-size:14px;
+    color:var(--fog-dim);
+    line-height:1.6;
+    margin-bottom:18px;
+  }
+  .reveal-odds{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--teal);
+    margin-bottom:18px;
+  }
+
+  footer{
+    text-align:center;
+    font-size:12px;
+    color:var(--fog-dim);
+    line-height:1.6;
+    max-width:520px;
+    margin:0 auto;
+  }
+  footer a{ color:var(--teal); text-decoration:none; border-bottom:1px dotted var(--teal); }
+
+  .visually-hidden{
+    position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">a live, unfinetuned stand-in for Centaur</div>
+    <h1>The Prediction Booth</h1>
+    <p class="sub">Two machines. Pull whichever lever you like. Before you choose, Claude writes a sealed guess about which one you're about to pick — based only on watching what you've done so far in this game.</p>
+  </header>
+
+  <div class="ticket-stage">
+    <div class="ticket" id="ticket">
+      <div class="ticket-label">
+        <span>Prediction ticket</span>
+        <span id="ticketRound">Round 1 / 15</span>
+      </div>
+      <div class="ticket-body state-thinking" id="ticketBody">
+        <span class="dots"><span></span><span></span><span></span></span>
+        <span>Watching for a pattern&hellip;</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="machines" id="machines">
+    <button class="machine A" id="btnA" disabled aria-label="Pull Machine A">
+      <div class="tag">Lever</div>
+      <div class="name">Machine A</div>
+      <div class="hint">Hidden odds. Only trial and error tells you.</div>
+      <div class="outcome" id="outA"></div>
+    </button>
+    <button class="machine B" id="btnB" disabled aria-label="Pull Machine B">
+      <div class="tag">Lever</div>
+      <div class="name">Machine B</div>
+      <div class="hint">Hidden odds. Only trial and error tells you.</div>
+      <div class="outcome" id="outB"></div>
+    </button>
+  </div>
+
+  <div class="statline">
+    <span>Coins: <b id="statCoins">0</b></span>
+    <span>Prediction accuracy: <b id="statAcc">&mdash;</b></span>
+    <span>Round <b id="statRound">1</b> of <b>15</b></span>
+  </div>
+
+  <div class="controls" id="controls" style="display:none;">
+    <button class="btn" id="nextBtn">Next round &rarr;</button>
+  </div>
+
+  <div id="endArea"></div>
+
+  <footer>
+    Inspired by Binz et al.'s <i>Centaur</i> model (Nature, 2025), which was fine-tuned on 10M+ real human choices across 160 experiments. This demo doesn't fine-tune anything &mdash; it just prompts Claude with the trial history and asks it to guess your next move, live. Think of it as a rough stand-in for the paper's un-finetuned baseline model, not for Centaur itself.
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  const MAX_ROUNDS = 15;
+  const REWARD = 10;
+
+  let state = {
+    probA: 0, probB: 0,
+    round: 1,
+    coins: 0,
+    history: [], // {round, choice, win}
+    predictions: [], // {round, predicted, actual, correct, reasoning}
+    pending: null, // fetched prediction for current round
+    fetching: false,
+    revealed: false,
+    finished: false
+  };
+
+  const el = {
+    ticket: document.getElementById('ticket'),
+    ticketBody: document.getElementById('ticketBody'),
+    ticketRound: document.getElementById('ticketRound'),
+    btnA: document.getElementById('btnA'),
+    btnB: document.getElementById('btnB'),
+    outA: document.getElementById('outA'),
+    outB: document.getElementById('outB'),
+    statCoins: document.getElementById('statCoins'),
+    statAcc: document.getElementById('statAcc'),
+    statRound: document.getElementById('statRound'),
+    controls: document.getElementById('controls'),
+    nextBtn: document.getElementById('nextBtn'),
+    machines: document.getElementById('machines'),
+    endArea: document.getElementById('endArea'),
+  };
+
+  function rand(min, max){ return Math.random() * (max - min) + min; }
+
+  function newGame(){
+    const highProb = rand(0.62, 0.82);
+    const lowProb = rand(0.15, 0.35);
+    if (Math.random() < 0.5){
+      state.probA = highProb; state.probB = lowProb;
+    } else {
+      state.probA = lowProb; state.probB = highProb;
+    }
+    state.round = 1;
+    state.coins = 0;
+    state.history = [];
+    state.predictions = [];
+    state.pending = null;
+    state.finished = false;
+    el.endArea.innerHTML = '';
+    el.machines.style.display = 'grid';
+    renderStats();
+    startRound();
+  }
+
+  function transcript(mapLetter){
+    if (state.history.length === 0){
+      return "This is the participant's very first round. There is no history yet.";
+    }
+    let lines = state.history.map(h =>
+      `Round ${h.round}: chose Machine ${mapLetter(h.choice)}, ${h.win ? 'won a reward' : 'won nothing'}.`
+    );
+    return "History so far, in order:\n" + lines.join("\n");
+  }
+
+  async function fetchPrediction(){
+    state.fetching = true;
+    setTicketThinking();
+
+    // Counterbalance: flip a coin on which real machine the model hears about as "A" vs "B".
+    // This is the same trick real experiments use to cancel out order/position effects —
+    // it stops any built-in model tendency to just say "A" from favoring one real machine.
+    const swap = Math.random() < 0.5;
+    const toModelLabel = (realLetter) => swap ? (realLetter === 'A' ? 'B' : 'A') : realLetter;
+    const toRealLetter = (modelLabel) => swap ? (modelLabel === 'A' ? 'B' : 'A') : modelLabel;
+
+    const prompt = `You are watching a single human participant play a two-armed bandit game. There are two machines, A and B, each with a fixed but unknown (to the participant) probability of paying out a reward. On each round the participant picks one machine and sees whether it paid out.
+
+${transcript(toModelLabel)}
+
+Predict which machine (A or B) this specific participant will pick on round ${state.round}, based on any pattern in how they've been behaving (e.g. sticking with a winner, switching after a loss, alternating, exploring). If there is no history yet, make a reasonable guess about a first move — and don't default to A purely because it's listed first.
+
+Respond with strict JSON only. No markdown, no code fences, no extra text. Reason briefly first, then commit to a letter. Exact format:
+{"reasoning": "one short plain sentence, 12 words or fewer", "prediction": "A", "confidence": 0.6}`;
+
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-6",
+          max_tokens: 1000,
+          system: "You output strictly valid JSON and nothing else.",
+          messages: [{ role: "user", content: prompt }]
+        })
+      });
+      const data = await response.json();
+      const textBlock = (data.content || []).find(b => b.type === 'text');
+      const raw = textBlock ? textBlock.text : '';
+      const cleaned = raw.replace(/```json|```/g, '').trim();
+      const parsed = JSON.parse(cleaned);
+      const modelPred = (parsed.prediction || '').trim().toUpperCase();
+      const validModelPred = (modelPred === 'A' || modelPred === 'B')
+        ? modelPred
+        : (Math.random() < 0.5 ? 'A' : 'B'); // unparseable → genuinely random, not silently "A"
+      state.pending = {
+        predicted: toRealLetter(validModelPred),
+        confidence: typeof parsed.confidence === 'number' ? parsed.confidence : null,
+        reasoning: parsed.reasoning || ''
+      };
+    } catch (err) {
+      console.error('Prediction fetch failed', err);
+      state.pending = {
+        predicted: Math.random() < 0.5 ? 'A' : 'B',
+        confidence: null,
+        reasoning: "(couldn't reach the model this round — guessing blind)"
+      };
+    }
+    state.fetching = false;
+    setTicketSealed();
+    setMachinesEnabled(true);
+  }
+
+  function startRound(){
+    state.revealed = false;
+    setMachinesEnabled(false);
+    clearOutcomes();
+    el.controls.style.display = 'none';
+    el.ticketRound.textContent = `Round ${state.round} / ${MAX_ROUNDS}`;
+    fetchPrediction();
+  }
+
+  function setTicketThinking(){
+    el.ticketBody.className = 'ticket-body state-thinking';
+    el.ticketBody.innerHTML = '<span class="dots"><span></span><span></span><span></span></span><span>Watching for a pattern&hellip;</span>';
+  }
+
+  function setTicketSealed(){
+    el.ticketBody.className = 'ticket-body';
+    el.ticketBody.innerHTML = `
+      <div class="seal">
+        <div class="seal-mark">?</div>
+        <div class="seal-text">The AI has already written its guess for this round.<br><b>Pull a lever to find out if it's right.</b></div>
+      </div>
+    `;
+  }
+
+  function setTicketRevealed(actual){
+    const p = state.pending;
+    const correct = p.predicted === actual;
+    el.ticketBody.className = 'ticket-body';
+    el.ticketBody.innerHTML = `
+      <div class="reveal">
+        <div class="line"><span>AI predicted</span><b>Machine ${p.predicted}</b></div>
+        <div class="line"><span>You chose</span><b>Machine ${actual}</b></div>
+        <div class="stamp ${correct ? 'correct' : 'miss'}">${correct ? 'CORRECT' : 'MISS'}</div>
+        ${p.reasoning ? `<div class="reasoning">&ldquo;${p.reasoning}&rdquo;</div>` : ''}
+      </div>
+    `;
+  }
+
+  function setMachinesEnabled(enabled){
+    el.btnA.disabled = !enabled;
+    el.btnB.disabled = !enabled;
+  }
+
+  function clearOutcomes(){
+    el.outA.className = 'outcome';
+    el.outB.className = 'outcome';
+    el.outA.textContent = '';
+    el.outB.textContent = '';
+  }
+
+  function choose(letter){
+    if (state.fetching || state.revealed || state.finished) return;
+    const prob = letter === 'A' ? state.probA : state.probB;
+    const win = Math.random() < prob;
+    if (win) state.coins += REWARD;
+
+    state.history.push({ round: state.round, choice: letter, win });
+
+    const predicted = state.pending.predicted;
+    const correct = predicted === letter;
+    state.predictions.push({
+      round: state.round, predicted, actual: letter, correct,
+      reasoning: state.pending.reasoning
+    });
+
+    const outEl = letter === 'A' ? el.outA : el.outB;
+    outEl.textContent = win ? `+${REWARD}` : 'nothing';
+    outEl.classList.add('show');
+
+    setTicketRevealed(letter);
+    setMachinesEnabled(false);
+    state.revealed = true;
+    renderStats();
+
+    if (state.round >= MAX_ROUNDS){
+      state.finished = true;
+      setTimeout(showEndCard, 550);
+    } else {
+      el.controls.style.display = 'flex';
+    }
+  }
+
+  function renderStats(){
+    el.statCoins.textContent = state.coins;
+    el.statRound.textContent = Math.min(state.round, MAX_ROUNDS);
+    const n = state.predictions.length;
+    if (n === 0){
+      el.statAcc.textContent = '\u2014';
+    } else {
+      const correct = state.predictions.filter(p => p.correct).length;
+      el.statAcc.textContent = `${Math.round((correct / n) * 100)}% (${correct}/${n})`;
+    }
+  }
+
+  function showEndCard(){
+    el.machines.style.display = 'none';
+    el.controls.style.display = 'none';
+    const n = state.predictions.length;
+    const correct = state.predictions.filter(p => p.correct).length;
+    const acc = n ? Math.round((correct / n) * 100) : 0;
+    const diff = acc - 50;
+    const higherLetter = state.probA > state.probB ? 'A' : 'B';
+
+    let verdict;
+    if (diff >= 20) verdict = "It found a real pattern in how you play — well above a coin flip.";
+    else if (diff >= 5) verdict = "A modest edge over random guessing. It picked up on something.";
+    else if (diff > -5) verdict = "Basically a coin flip. Your choices didn't leave much of a pattern to read &mdash; or 15 rounds just wasn't enough data.";
+    else verdict = "Worse than chance. Either you were being deliberately unpredictable, or it read you exactly backwards.";
+
+    el.endArea.innerHTML = `
+      <div class="endcard">
+        <h2>15 rounds down.</h2>
+        <div class="end-grid">
+          <div class="end-stat">
+            <div class="num">${state.coins}</div>
+            <div class="lbl">Coins collected</div>
+          </div>
+          <div class="end-stat">
+            <div class="num">${acc}%</div>
+            <div class="lbl">AI prediction accuracy</div>
+          </div>
+        </div>
+        <div class="end-verdict">${verdict}</div>
+        <div class="reveal-odds">Machine A's hidden odds: ${Math.round(state.probA*100)}% &nbsp;&middot;&nbsp; Machine B's hidden odds: ${Math.round(state.probB*100)}%<br>(Machine ${higherLetter} was the better bet the whole time.)</div>
+        <button class="btn" id="playAgain">Play again</button>
+      </div>
+    `;
+    document.getElementById('playAgain').addEventListener('click', newGame);
+  }
+
+  el.btnA.addEventListener('click', () => choose('A'));
+  el.btnB.addEventListener('click', () => choose('B'));
+  el.nextBtn.addEventListener('click', () => {
+    state.round += 1;
+    startRound();
+  });
+
+  newGame();
+})();
+</script>
+
+</body>
+</html>

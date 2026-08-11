@@ -1,0 +1,418 @@
+/*
+ * hum(ai)n — computer-AI horror.
+ *
+ * True black, cold off-white, one restrained error red, one sickly phosphor
+ * green-gray. Everything is monospace: this is a machine's interface, not an
+ * editorial layout. No web font is fetched at runtime — the stack is entirely
+ * local, so there is no FOUT, no layout shift and no network dependency.
+ *
+ * One custom property drives the whole escalation:
+ *
+ *   --dread   0..1, how much Darry has understood
+ *
+ * It raises the scanline weight, the noise, the red bleed and how often the
+ * authored glitches fire. Glitches are triggered by explicit classes and
+ * animation events, never sprayed across the page at random.
+ *
+ * Flash discipline: no animation in this file cycles opacity or color faster than
+ * 3 times per second, and every displacement, shake and flash is removed under
+ * `prefers-reduced-motion` while the atmosphere (grain, scanlines, vignette,
+ * colour) is kept.
+ */
+
+:root {
+  --black: #000000;
+  --near: #050506;
+  --panel: #0a0b0c;
+  --panel-lift: #101113;
+  --edge: #1d1f22;
+  --edge-live: #2b2e33;
+
+  --bone: #e4e4e2;
+  --bone-dim: #9a9c9b;
+  --bone-faint: #5f6163;
+
+  /* Error red. Used for (ai), for Darry's certainty, and for almost nothing else. */
+  --red: #ff2b32;
+  --red-deep: #a8121a;
+  --red-wash: rgba(255, 43, 50, 0.08);
+
+  /* Sickly monitor phosphor. Sparingly, for machine state. */
+  --phos: #7f9c92;
+
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
+    "DejaVu Sans Mono", monospace;
+
+  --dread: 0;
+  --gutter: clamp(1.1rem, 5vw, 2.2rem);
+  --measure: 33rem;
+
+  --step: 160ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  background: var(--black);
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--black);
+  color: var(--bone);
+  font-family: var(--mono);
+  font-size: 15px;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* --- Screen furniture: scanlines, noise, vignette ------------------------ */
+
+/*
+ * Scanlines. Static, never animated — a moving scanline reads as a cheap CRT
+ * filter. Weight rises with dread so the screen slowly degrades.
+ */
+.crt-lines {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, calc(0.012 + var(--dread) * 0.02)) 0 1px,
+    transparent 1px 3px
+  );
+}
+
+/* Digital noise. Slow stepped drift, six frames over five seconds. */
+.crt-noise {
+  position: fixed;
+  inset: -15%;
+  z-index: 91;
+  pointer-events: none;
+  opacity: calc(0.035 + var(--dread) * 0.045);
+  background-image: radial-gradient(rgba(228, 228, 226, 0.55) 0.5px, transparent 0.6px);
+  background-size: 3px 3px;
+  animation: noise-drift 5s steps(6) infinite;
+}
+
+@keyframes noise-drift {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-2%, 1%); }
+  40% { transform: translate(1%, -2%); }
+  60% { transform: translate(-1%, -1%); }
+  80% { transform: translate(2%, 2%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* The screen closing in. Corners only — never over the reading column. */
+.crt-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 92;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 145% 115% at 50% 45%,
+    transparent 68%,
+    rgba(0, 0, 0, calc(0.25 + var(--dread) * 0.35)) 100%
+  );
+  transition: background 1400ms linear;
+}
+
+/* --- Layout -------------------------------------------------------------- */
+
+.screen {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--gutter) * 2.4) var(--gutter) var(--gutter);
+  position: relative;
+}
+
+.screen--top {
+  justify-content: flex-start;
+}
+
+.column {
+  width: 100%;
+  max-width: 40rem;
+}
+
+.center {
+  text-align: center;
+}
+
+/* --- Type ---------------------------------------------------------------- */
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+  font-weight: 400;
+}
+
+.headline {
+  font-size: clamp(1.35rem, 5.5vw, 2rem);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.huge {
+  font-size: clamp(2rem, 11vw, 4.25rem);
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+}
+
+.label {
+  font-size: 0.625rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--bone-faint);
+}
+
+.body {
+  color: var(--bone-dim);
+  font-size: 0.875rem;
+  line-height: 1.65;
+}
+
+.fine {
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--bone-faint);
+}
+
+.dim { color: var(--bone-dim); }
+.faint { color: var(--bone-faint); }
+.red { color: var(--red); }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- Buttons ------------------------------------------------------------- */
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 3px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0.85rem 1.7rem;
+  border: 1px solid var(--edge-live);
+  background: transparent;
+  color: var(--bone);
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  transition: border-color var(--step) var(--ease), background-color var(--step) var(--ease),
+    color var(--step) var(--ease);
+}
+
+.btn:hover:not(:disabled),
+.btn:focus-visible:not(:disabled) {
+  border-color: var(--red);
+  background: var(--red-wash);
+}
+
+.btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.btn--quiet {
+  border-color: transparent;
+  color: var(--bone-faint);
+  letter-spacing: 0.12em;
+}
+
+.btn--quiet:hover:not(:disabled),
+.btn--quiet:focus-visible:not(:disabled) {
+  border-color: var(--edge-live);
+  background: transparent;
+  color: var(--bone);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  align-items: center;
+}
+
+.actions--center {
+  justify-content: center;
+}
+
+/* --- Authored glitch effects -------------------------------------------- */
+
+/*
+ * Chromatic separation. Used on major transitions and on Darry's assertions —
+ * a red/cyan split behind the glyphs, no movement required.
+ */
+.chroma {
+  text-shadow:
+    calc(-0.02em - var(--dread) * 0.02em) 0 0 rgba(255, 43, 50, 0.75),
+    calc(0.02em + var(--dread) * 0.02em) 0 0 rgba(90, 220, 255, 0.45);
+}
+
+/* A single authored displacement, fired once by adding the class. */
+.glitch-once {
+  animation: displace 260ms steps(4) 1;
+}
+
+@keyframes displace {
+  0% { transform: translate3d(0, 0, 0); clip-path: inset(0 0 0 0); }
+  25% { transform: translate3d(-3px, 0, 0); clip-path: inset(18% 0 52% 0); }
+  50% { transform: translate3d(4px, 0, 0); clip-path: inset(62% 0 12% 0); }
+  75% { transform: translate3d(-2px, 0, 0); clip-path: inset(34% 0 38% 0); }
+  100% { transform: translate3d(0, 0, 0); clip-path: inset(0 0 0 0); }
+}
+
+/* Heavier version for the ending reveal. Still four steps, still one shot. */
+.glitch-hard {
+  animation: displace-hard 420ms steps(6) 1;
+}
+
+@keyframes displace-hard {
+  0% { transform: translate3d(0, 0, 0) skewX(0deg); }
+  16% { transform: translate3d(-9px, 1px, 0) skewX(-1.4deg); }
+  33% { transform: translate3d(7px, -1px, 0) skewX(1deg); }
+  50% { transform: translate3d(-5px, 0, 0) skewX(-0.6deg); }
+  66% { transform: translate3d(4px, 1px, 0) skewX(0.4deg); }
+  83% { transform: translate3d(-2px, 0, 0) skewX(0deg); }
+  100% { transform: translate3d(0, 0, 0) skewX(0deg); }
+}
+
+/*
+ * Ambient instability on a panel edge. 2.4s cycle — well under three changes
+ * per second — and only ever a border colour, never a flash of the whole panel.
+ */
+.unstable {
+  animation: unstable-edge 2400ms steps(3) infinite;
+}
+
+@keyframes unstable-edge {
+  0%, 100% { border-color: var(--edge); }
+  50% { border-color: var(--edge-live); }
+}
+
+/* A cursor. One blink per second: two opacity changes, well within budget. */
+.cursor {
+  display: inline-block;
+  width: 0.55em;
+  height: 1em;
+  background: currentColor;
+  vertical-align: text-bottom;
+  animation: blink 1s steps(2, end) infinite;
+}
+
+@keyframes blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+/* Entrances. Opacity only, so they are safe to keep everywhere. */
+.fade-in {
+  animation: fade-in 520ms var(--ease) both;
+}
+
+.fade-in-slow {
+  animation: fade-in 1100ms var(--ease) both;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.rise {
+  animation: rise 420ms var(--ease) both;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+/*
+ * Reduced motion.
+ *
+ * Everything that moves, shakes, displaces or blinks is stopped. The grain,
+ * scanlines, vignette, chromatic separation and colour all remain, so the screen
+ * still feels wrong without anything jumping. Note the deliberate exception:
+ * `fade-in` is opacity-only and is left at a short duration so content still
+ * appears rather than popping, which is gentler than an instant cut.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .crt-noise,
+  .glitch-once,
+  .glitch-hard,
+  .unstable,
+  .cursor,
+  .rise {
+    animation: none !important;
+  }
+
+  .crt-noise {
+    /* Keep the texture, lose the drift. */
+    opacity: calc(0.03 + var(--dread) * 0.03);
+  }
+
+  .cursor {
+    opacity: 1;
+  }
+
+  .fade-in,
+  .fade-in-slow {
+    animation-duration: 200ms;
+  }
+
+  * {
+    transition-duration: 1ms !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --bone-dim: #d2d2d0;
+    --bone-faint: #a4a6a8;
+    --edge: #4a4d52;
+    --edge-live: #6a6d72;
+  }
+}

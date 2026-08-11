@@ -1,0 +1,81 @@
+.boot {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: var(--gutter);
+  /* True black. Nothing else on this screen. */
+  background: #000000;
+}
+
+/* --- the bar ------------------------------------------------------------- */
+
+.track {
+  width: min(15rem, 60vw);
+  height: 2px;
+  background: #1a1a1a;
+  overflow: hidden;
+  animation: bar-out 320ms 0ms both paused;
+}
+
+.fill {
+  height: 100%;
+  background: #e4e4e2;
+  /* Short transition so each irregular step lands as a movement, not a jump. */
+  transition: width 60ms linear;
+}
+
+/* The completed bar brightens for its brief hold before fading. */
+.trackComplete .fill {
+  background: #ffffff;
+}
+
+@keyframes bar-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* --- ENTER --------------------------------------------------------------- */
+
+.enter {
+  min-height: 48px;
+  padding: 0.95rem 2.6rem;
+  border: 1px solid var(--bone-faint);
+  background: transparent;
+  color: var(--bone);
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.34em;
+  animation: enter-in 420ms var(--ease) both;
+  transition: border-color var(--step) var(--ease), background-color var(--step) var(--ease);
+}
+
+.enter:hover,
+.enter:focus-visible {
+  border-color: var(--bone);
+  background: rgba(228, 228, 226, 0.06);
+}
+
+.enter:focus-visible {
+  outline: 2px solid var(--bone);
+  outline-offset: 3px;
+}
+
+@keyframes enter-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fill {
+    transition: none;
+  }
+
+  .enter {
+    animation-duration: 1ms;
+  }
+}

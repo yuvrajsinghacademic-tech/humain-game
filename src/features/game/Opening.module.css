@@ -1,0 +1,37 @@
+.stack {
+  display: grid;
+  gap: clamp(2.5rem, 9vh, 5rem);
+  justify-items: center;
+}
+
+/*
+ * The transition failure: for a fraction of a second after the button is pressed,
+ * the composition breaks apart before the consent panel resolves out of it. Clipped
+ * and offset rather than faded, so it reads as a signal fault.
+ */
+.stack[data-failing='true'] {
+  clip-path: inset(6% 0 14% 0);
+  transform: translateX(-5px) skewX(-0.8deg);
+  filter: contrast(1.4) brightness(0.7);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stack[data-failing='true'] {
+    clip-path: none;
+    transform: none;
+    filter: none;
+  }
+}
+
+.mark {
+  margin: 0;
+  line-height: 1;
+}
+
+.enter {
+  /* Lowercase, always — the button is the question, not a heading. */
+  text-transform: lowercase;
+  letter-spacing: 0.1em;
+  font-size: 0.875rem;
+  padding: 1rem 2rem;
+}

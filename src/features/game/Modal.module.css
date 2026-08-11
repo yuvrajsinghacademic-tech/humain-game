@@ -1,0 +1,73 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  /* Above the static (1), the menu (5) and every glitch layer (93–95). */
+  z-index: 210;
+  height: 100dvh;
+  max-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: clamp(0.5rem, 3vh, 1.75rem) var(--gutter);
+  background: rgba(0, 0, 0, 0.9);
+  overflow: hidden;
+}
+
+.panel {
+  width: 100%;
+  max-width: 30rem;
+  max-height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  /* Opaque, so the static behind can never affect readability. */
+  background: #050506;
+  border: 1px solid var(--edge);
+}
+
+.title {
+  margin: 0;
+  padding: clamp(1rem, 3vw, 1.4rem) clamp(1.1rem, 4vw, 1.8rem) 0.8rem;
+  border-bottom: 1px solid var(--edge);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.3em;
+  color: var(--bone);
+}
+
+.body {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: clamp(1rem, 3vw, 1.4rem) clamp(1.1rem, 4vw, 1.8rem);
+  min-height: 0;
+}
+
+.actions {
+  padding: clamp(0.8rem, 2.5vw, 1.1rem) clamp(1.1rem, 4vw, 1.8rem);
+  border-top: 1px solid var(--edge);
+  background: #050506;
+  display: flex;
+}
+
+.back {
+  flex: 1 1 auto;
+  min-height: 44px;
+  padding: 0.75rem 1.2rem;
+  border: 1px solid var(--edge-live);
+  background: transparent;
+  color: var(--bone);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  transition: border-color var(--step) var(--ease), background-color var(--step) var(--ease);
+}
+
+.back:hover {
+  border-color: var(--bone);
+  background: rgba(228, 228, 226, 0.05);
+}
+
+.back:focus-visible {
+  outline: 2px solid var(--bone);
+  outline-offset: 2px;
+  border-color: var(--bone);
+}

@@ -1,0 +1,31 @@
+.corner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem var(--gutter);
+  pointer-events: none;
+}
+
+.corner > * {
+  pointer-events: auto;
+}
+
+.sound {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.2em;
+  color: var(--bone-faint);
+  padding: 0.4rem 0.5rem;
+  min-height: 32px;
+  transition: color var(--step) var(--ease);
+}
+
+.sound:hover,
+.sound:focus-visible {
+  color: var(--bone);
+}

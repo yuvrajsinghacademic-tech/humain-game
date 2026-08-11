@@ -1,0 +1,218 @@
+/*
+ * The glitch layer.
+ *
+ * Effects are applied as inline styles and rendered overlays driven by scheduler
+ * state, not as looping CSS animations — an animation cannot be restarted by
+ * re-adding the same class, and an effect that is either on or off for a measured
+ * number of milliseconds is far easier to reason about and to test.
+ *
+ * Intensity comes from displacement, fragmentation, duplication, red contamination
+ * and corrupted text. There is no white flash anywhere in this file.
+ *
+ * Every layer is `pointer-events: none`, so nothing drawn here can intercept a
+ * click, and every layer sits below the consent document's z-index so a glitch can
+ * never render across the warning.
+ */
+
+.stage {
+  position: relative;
+  min-height: 100dvh;
+}
+
+/* Duplicated fragments of the central composition. */
+.centreLayer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 94;
+  overflow: hidden;
+}
+
+.fragmentCopy {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--black);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--gutter);
+}
+
+/* Delayed copies read as stale frames: dimmer, slightly washed. */
+.delayed {
+  opacity: 0.6;
+  filter: contrast(1.5) brightness(0.75);
+}
+
+/* The misplaced wordmark: corrupted, offset, and clearly wrong. */
+.wrongPlace {
+  opacity: 0.75;
+  filter: contrast(1.6);
+  background: transparent;
+}
+
+/* Large chromatic displacement, built from two tinted copies. */
+.chromaRed {
+  background: transparent;
+  mix-blend-mode: screen;
+  filter: brightness(0.9) sepia(1) hue-rotate(-40deg) saturate(6);
+  opacity: 0.7;
+}
+
+.chromaCyan {
+  background: transparent;
+  mix-blend-mode: screen;
+  filter: brightness(0.9) sepia(1) hue-rotate(140deg) saturate(5);
+  opacity: 0.55;
+}
+
+.layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 95;
+}
+
+/* --- tear and fragments -------------------------------------------------- */
+
+.tear {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: var(--black);
+  box-shadow: 0 0 0 1px rgba(255, 43, 50, 0.45);
+}
+
+.fragmentBar {
+  position: absolute;
+  background: rgba(228, 228, 226, 0.16);
+  box-shadow: 0 0 0 1px rgba(255, 43, 50, 0.2);
+}
+
+/* --- scanline skip ------------------------------------------------------- */
+
+.skip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* --- dead cells and stuck pixels ----------------------------------------- */
+
+.cellDead {
+  position: absolute;
+  background: var(--black);
+  box-shadow: 0 0 0 0.5px rgba(228, 228, 226, 0.12);
+}
+
+.cellRed {
+  position: absolute;
+  background: var(--red);
+  opacity: 0.7;
+}
+
+/* --- misplaced red frame ------------------------------------------------- */
+
+.redFrame {
+  position: absolute;
+  border: 1px solid var(--red);
+  opacity: 0.5;
+}
+
+/* --- brightness collapse and signal collapse ----------------------------- */
+
+.dim {
+  position: absolute;
+  inset: 0;
+  background: var(--black);
+  opacity: 0.42;
+}
+
+/*
+ * Signal collapse: almost everything goes, leaving a faint red horizon. Recovery is
+ * immediate because the scheduler simply removes the element.
+ */
+.collapse {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    var(--black) 0 48%,
+    rgba(255, 43, 50, 0.18) 49% 51%,
+    var(--black) 52% 100%
+  );
+  opacity: 0.94;
+}
+
+/* --- ghost text ---------------------------------------------------------- */
+
+.ghost {
+  position: absolute;
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.24em;
+  text-transform: lowercase;
+  color: rgba(255, 43, 50, 0.5);
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* --- procedural background interference ---------------------------------- */
+
+.interference {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 93;
+  overflow: hidden;
+}
+
+.block {
+  position: absolute;
+  background: rgba(228, 228, 226, 0.018);
+}
+
+.deadRow {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.contamination {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 43, 50, 0.055) 35%,
+    rgba(255, 43, 50, 0.02) 60%,
+    transparent
+  );
+}
+
+/*
+ * Reduced motion. The scheduler never emits a motion event in this mode, so none of
+ * the displacing overlays can be rendered at all. These rules are belt and braces:
+ * even if one were somehow mounted, it would not move.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .stage {
+    transform: none !important;
+  }
+
+  .tear,
+  .fragmentBar,
+  .fragmentCopy {
+    transform: none !important;
+  }
+
+  .centreLayer {
+    display: none;
+  }
+}
