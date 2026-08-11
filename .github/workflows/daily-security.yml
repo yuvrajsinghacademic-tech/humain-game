@@ -1,0 +1,155 @@
+name: Daily security
+
+# ---------------------------------------------------------------------------
+# Schedule
+#
+# 03:17 America/Los_Angeles, declared with an IANA zone so the run holds the same local
+# hour year-round rather than sliding an hour each time daylight saving changes, which is
+# what a fixed UTC cron would do.
+#
+# The irregular minute is deliberate: exactly-on-the-hour schedules queue behind
+# everyone else's.
+#
+# Scheduled runs always use the workflow file and the latest commit on the default
+# branch, never a pull-request branch.
+# ---------------------------------------------------------------------------
+on:
+  schedule:
+    - cron: '17 3 * * *'
+      timezone: 'America/Los_Angeles'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A manual dispatch should not fight with the nightly run, but neither should be
+# cancelled — each is a distinct record of the state of the world at that moment.
+concurrency:
+  group: daily-security-${{ github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  # Three separate jobs on purpose: the failure email names the job, so "Daily
+  # security / dependency audit" and "Daily security / production probe" are
+  # immediately distinguishable without opening the run.
+  audit:
+    name: dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # This workflow never changes a dependency. It reports, and a human decides —
+      # `npm audit fix` in an unattended nightly job is how a lockfile quietly drifts.
+      - name: Audit production dependencies
+        run: |
+          set +e
+          output=$(npm audit --omit=dev --audit-level=high 2>&1)
+          code=$?
+          echo "$output"
+          set -e
+
+          if [ $code -eq 0 ]; then
+            echo "### Dependency audit: pass" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "No high or critical advisories against production dependencies." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          # An unreachable registry is not a clean bill of health. Distinguish the two
+          # so a network outage cannot be mistaken for "no vulnerabilities".
+          if echo "$output" | grep -qiE 'ENOTFOUND|EAI_AGAIN|ECONNREFUSED|ETIMEDOUT|network|socket hang up|registry error|Unable to reach|502 Bad Gateway|503 Service'; then
+            echo "::error title=Audit service unreachable::npm audit could not complete. This is NOT a pass."
+            {
+              echo "### Dependency audit: **could not run**"
+              echo ""
+              echo "The npm registry or advisory service was unreachable. Treating this as"
+              echo "a failure on purpose — an audit that did not happen is not an audit that passed."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+          echo "::error title=Vulnerable production dependency::npm audit reported a high or critical advisory."
+          {
+            echo "### Dependency audit: **high or critical advisory**"
+            echo ""
+            echo "A production dependency has a known vulnerability. Nothing was changed"
+            echo "automatically; review the advisory and update deliberately."
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+
+  gates:
+    name: quality regression and invariants
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: TypeScript
+        run: npm run typecheck
+
+      - name: Unit and component tests
+        run: npm test
+
+      - name: Production build
+        run: npm run build
+
+      - name: Repository security invariants
+        run: npm run security
+
+  probe:
+    name: production probe
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+
+      # A repository *variable*, not a secret: a public URL is not confidential, and a
+      # secret would be masked in the logs, which makes a failure harder to read.
+      - name: Probe the deployment
+        env:
+          PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+        run: |
+          if [ -z "${PRODUCTION_URL}" ]; then
+            echo "::warning title=No production URL::Set the PRODUCTION_URL repository variable to enable this probe."
+            {
+              echo "### Production probe: **skipped**"
+              echo ""
+              echo "The \`PRODUCTION_URL\` repository variable is not set, so there is nothing"
+              echo "to probe. This is not a pass — no deployment was checked."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          # Every request this makes is refused before the OpenAI authorization
+          # boundary, so a nightly run costs nothing at the provider.
+          node scripts/production-probe.mjs "${PRODUCTION_URL}"

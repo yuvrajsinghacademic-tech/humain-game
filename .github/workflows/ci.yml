@@ -1,0 +1,97 @@
+name: CI
+
+# Every pull request, every push to main, and on demand.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Read-only. Nothing here writes to the repository, comments on a PR, or publishes.
+permissions:
+  contents: read
+
+# A newer push to the same branch supersedes this run.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Turbopack and Playwright are both happier with the colour off in logs.
+  FORCE_COLOR: '1'
+
+jobs:
+  # Named for the failure email: "CI / quality gates" is unambiguous.
+  gates:
+    name: quality gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          # Keyed on package-lock.json by the action itself.
+          cache: npm
+
+      # `npm ci` only. It installs exactly the lockfile and fails if the two disagree.
+      - name: Install
+        run: npm ci
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: TypeScript
+        run: npm run typecheck
+
+      - name: Unit and component tests
+        run: npm test
+
+      - name: Production build
+        run: npm run build
+
+      # After the build, so the rules that inspect the client bundle have something to
+      # inspect. This is the step that fails if a credential name, a local path or a
+      # source map reaches the browser output.
+      - name: Repository security invariants
+        run: npm run security
+
+  e2e:
+    name: end-to-end
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # Chromium only. The suite is about layout, ordering and real audio playback,
+      # none of which need a second engine.
+      - name: Install Chromium
+        run: npm run test:e2e:install -- --with-deps
+
+      # No secrets. playwright.config.ts supplies the deterministic stand-in model and
+      # a throwaway sealing secret itself, so the suite never needs — and never has —
+      # production credentials.
+      - name: Playwright
+        run: npm run test:e2e
+
+      - name: Upload traces on failure
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore

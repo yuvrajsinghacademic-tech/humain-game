@@ -1,0 +1,54 @@
+name: CodeQL
+
+# Advanced setup, deliberately chosen over default setup so the query suite and the
+# schedule are visible in the repository rather than in a settings page. Enabling
+# GitHub's default CodeQL setup as well would run two analyses over the same code and
+# double the noise — pick one. If default setup is ever switched on, delete this file.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    # 04:41 UTC daily. Offset from the daily-security workflow so the two do not queue
+    # against each other, and off the hour for the same reason.
+    - cron: '41 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: analyze javascript-typescript
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    permissions:
+      # Narrow: read the code, write the alerts, nothing else.
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@18420e3271f74589575af831a523c833acda327f # codeql-bundle-v2.26.2
+        with:
+          # One identifier covers both languages; they share an extractor.
+          languages: javascript-typescript
+          # No compilation step is needed to extract JavaScript or TypeScript.
+          build-mode: none
+          # Broader than the default suite: includes the lower-precision queries, which
+          # is the right trade for a small codebase where triage is cheap.
+          queries: security-extended
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@18420e3271f74589575af831a523c833acda327f # codeql-bundle-v2.26.2
+        with:
+          category: '/language:javascript-typescript'
