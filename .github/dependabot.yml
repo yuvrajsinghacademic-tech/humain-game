@@ -1,0 +1,53 @@
+version: 2
+
+# Version updates only. Dependabot *security* updates are a separate, repository-level
+# setting and are intentionally left enabled — a known-vulnerable package should raise a
+# pull request the day it is disclosed, not wait for Monday.
+#
+# Nothing here merges automatically. Every dependency change is reviewed.
+updates:
+  - package-ecosystem: npm
+    directory: '/'
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: America/Los_Angeles
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'deps'
+      prefix-development: 'deps(dev)'
+      include: scope
+    groups:
+      # One pull request for the safe stuff. Without grouping, a quiet week still
+      # produces a dozen single-line PRs and they stop being read.
+      production-minor-and-patch:
+        applies-to: version-updates
+        dependency-type: production
+        update-types: ['minor', 'patch']
+      development-minor-and-patch:
+        applies-to: version-updates
+        dependency-type: development
+        update-types: ['minor', 'patch']
+    # Majors fall outside both groups by omission, which is the point: each one arrives
+    # as its own pull request with its own changelog to read. Next, React and Zod
+    # majors have all required code changes in the past, so they are never something to
+    # merge on a glance — but they are also not something to hide.
+
+  - package-ecosystem: github-actions
+    directory: '/'
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: America/Los_Angeles
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'ci'
+      include: scope
+    groups:
+      # The workflows pin actions to commit SHAs with the version in a trailing comment.
+      # Dependabot reads that comment, so it can still see and bump them.
+      actions:
+        applies-to: version-updates
+        patterns: ['*']
