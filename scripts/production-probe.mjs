@@ -217,38 +217,34 @@ if (AS_JSON) {
 }
 
 /**
- * Make a value from the network safe to put in a rendered summary.
+ * The run summary.
  *
- * `detail` often quotes a response header, and the step summary is Markdown that
- * GitHub renders — so a header from a host that is not behaving could inject markup
- * into the run page, or simply be long enough to bury the result. CodeQL flagged the
- * unsanitized path (`js/http-to-file-access`) and it was right to. Control characters
- * go, the Markdown and HTML significant characters go, and the length is capped. The
- * unabridged value is still in the job log, which is plain text.
+ * Nothing that came off the network is written here — not sanitised, not truncated, not
+ * at all. Only the check names, which are literals in this file, and counts.
+ *
+ * The first attempt scrubbed the remote `detail` instead, and CodeQL went on flagging
+ * the flow (`js/http-to-file-access`): a chain of String.replace is not a barrier its
+ * taint tracking recognises, and it should not have to take one on faith. The summary is
+ * a headline anyway — the response values it used to quote are all in the job log a
+ * click away, which is plain text that nobody renders.
  */
-function summarySafe(value) {
-  return String(value)
-    .replace(/[\u0000-\u001f\u007f]/g, ' ')
-    .replace(/[`*_[\]<>|#\\]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, 100);
-}
-
 if (process.env.GITHUB_STEP_SUMMARY) {
+  const passed = results.length - failed.length;
   const lines = [
-    `### Production probe: ${failed.length === 0 ? 'pass' : `**${failed.length} failure(s)**`}`,
-    '',
-    // The target comes from repository configuration rather than from a response, but
-    // it is scrubbed too: there is no reason for this line to be the exception.
-    `Target: \`${summarySafe(BASE)}\` — ${results.length - failed.length}/${results.length} checks passed.`,
-    '',
-    'No request in this probe can reach the OpenAI authorization boundary.',
+    `### Production probe: ${failed.length === 0 ? "pass" : `**${failed.length} failure(s)**`}`,
+    "",
+    `${passed}/${results.length} checks passed.`,
+    "",
+    "No request in this probe can reach the OpenAI authorization boundary.",
   ];
-  // `name` is a literal from this file; only `detail` can carry remote content.
-  for (const { name, detail } of failed) lines.push(`- **${name}** — ${summarySafe(detail)}`);
+  if (failed.length) {
+    lines.push("", "Failed:");
+    // `name` is a string literal defined above; the observed values stay in the log.
+    for (const { name } of failed) lines.push(`- ${name}`);
+    lines.push("", "See the step log for what each check actually saw.");
+  }
   try {
-    appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${lines.join('\n')}\n`);
+    appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${lines.join("\n")}\n`);
   } catch {
     /* a summary is a nicety, never a failure */
   }
