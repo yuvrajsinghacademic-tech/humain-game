@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import RootPage from '@/app/page';
-import LinkedInPage from '@/app/linkedin/page';
+import LinkedInPage, { metadata } from '@/app/linkedin/page';
+import { metadata as rootMetadata } from '@/app/layout';
 
 /**
  * `/linkedin` must be the same experience as `/`, not a lookalike.
@@ -33,5 +34,34 @@ describe('/linkedin', () => {
     expect(rendered.type).toBeTypeOf('function');
     expect((rendered.type as { name?: string }).name).toBe('Game');
     expect(rendered.props).toEqual({});
+  });
+});
+
+/**
+ * The only intentional difference from `/`, and it is invisible to a player: two
+ * addresses serving identical content should not compete for it.
+ */
+describe('/linkedin metadata', () => {
+  it('names the homepage as canonical, absolutely', () => {
+    expect(metadata.alternates?.canonical).toBe('https://www.willyoubereplaced.com/');
+    // Absolute on purpose: no `metadataBase` is configured, and a relative canonical
+    // without one resolves against localhost during a build.
+    expect(String(metadata.alternates?.canonical)).toMatch(/^https:\/\//);
+  });
+
+  it('is noindex but still followed', () => {
+    expect(metadata.robots).toEqual({ index: false, follow: true });
+  });
+
+  it('overrides the layout, which indexes everything else', () => {
+    // The distinction is the point: `/` stays indexable, this route does not.
+    expect(rootMetadata.robots).toEqual({ index: true, follow: true });
+    expect((metadata.robots as { index?: boolean }).index).toBe(false);
+  });
+
+  it('changes nothing else about the page', () => {
+    // No title, description or icon override — those still come from the layout, so the
+    // tab and the share preview are identical to the homepage's.
+    expect(Object.keys(metadata).sort()).toEqual(['alternates', 'robots']);
   });
 });

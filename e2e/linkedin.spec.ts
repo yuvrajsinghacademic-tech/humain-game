@@ -92,4 +92,29 @@ test.describe('/linkedin', () => {
     expect(response.headers()['content-type']).toContain('text/html');
     expect(await response.text()).toContain('hum(ai)n');
   });
+
+  /**
+   * The metadata, as actually emitted.
+   *
+   * The unit test asserts the exported object; this asserts the tags Next renders from
+   * it, which is the thing a crawler sees. The two can disagree — a misplaced export or
+   * a layout override would show up only here.
+   */
+  test('is canonicalised to the homepage and kept out of the index', async ({ request }) => {
+    const html = await request.get('/linkedin', { maxRedirects: 0 }).then((r) => r.text());
+
+    expect(html).toMatch(
+      /<link[^>]+rel="canonical"[^>]+href="https:\/\/www\.willyoubereplaced\.com\/"/,
+    );
+    // Next renders `{ index: false, follow: true }` as exactly this.
+    expect(html).toMatch(/<meta[^>]+name="robots"[^>]+content="noindex, follow"/);
+  });
+
+  test('leaves the homepage indexable', async ({ request }) => {
+    // The whole point of the override: `/` must not have inherited the noindex.
+    const html = await request.get('/', { maxRedirects: 0 }).then((r) => r.text());
+
+    expect(html).toMatch(/<meta[^>]+name="robots"[^>]+content="index, follow"/);
+    expect(html).not.toContain('noindex');
+  });
 });
