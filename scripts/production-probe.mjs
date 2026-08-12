@@ -216,15 +216,37 @@ if (AS_JSON) {
   console.log(`\n${results.length - failed.length}/${results.length} checks passed`);
 }
 
+/**
+ * Make a value from the network safe to put in a rendered summary.
+ *
+ * `detail` often quotes a response header, and the step summary is Markdown that
+ * GitHub renders — so a header from a host that is not behaving could inject markup
+ * into the run page, or simply be long enough to bury the result. CodeQL flagged the
+ * unsanitized path (`js/http-to-file-access`) and it was right to. Control characters
+ * go, the Markdown and HTML significant characters go, and the length is capped. The
+ * unabridged value is still in the job log, which is plain text.
+ */
+function summarySafe(value) {
+  return String(value)
+    .replace(/[\u0000-\u001f\u007f]/g, ' ')
+    .replace(/[`*_[\]<>|#\\]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 100);
+}
+
 if (process.env.GITHUB_STEP_SUMMARY) {
   const lines = [
     `### Production probe: ${failed.length === 0 ? 'pass' : `**${failed.length} failure(s)**`}`,
     '',
-    `Target: \`${BASE}\` — ${results.length - failed.length}/${results.length} checks passed.`,
+    // The target comes from repository configuration rather than from a response, but
+    // it is scrubbed too: there is no reason for this line to be the exception.
+    `Target: \`${summarySafe(BASE)}\` — ${results.length - failed.length}/${results.length} checks passed.`,
     '',
     'No request in this probe can reach the OpenAI authorization boundary.',
   ];
-  for (const { name, detail } of failed) lines.push(`- **${name}** — ${detail}`);
+  // `name` is a literal from this file; only `detail` can carry remote content.
+  for (const { name, detail } of failed) lines.push(`- **${name}** — ${summarySafe(detail)}`);
   try {
     appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${lines.join('\n')}\n`);
   } catch {
