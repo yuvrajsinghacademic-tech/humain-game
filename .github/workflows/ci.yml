@@ -11,10 +11,15 @@ on:
 permissions:
   contents: read
 
-# A newer push to the same branch supersedes this run.
+# A newer push to a pull request supersedes the run in flight — nobody needs results
+# for a commit that has already been replaced.
+#
+# `main` is deliberately excluded. Cancelling there would mean a commit that is already
+# deployable ends up with no completed run against it, which is exactly the record worth
+# keeping: every commit on the default branch should have its own verdict.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   # Turbopack and Playwright are both happier with the colour off in logs.
