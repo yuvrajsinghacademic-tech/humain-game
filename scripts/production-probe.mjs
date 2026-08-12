@@ -125,11 +125,6 @@ record(
   (home.headers.get('permissions-policy') ?? '').length > 0,
   home.headers.get('permissions-policy') ?? '(absent)',
 );
-record(
-  'no wildcard CORS',
-  (home.headers.get('access-control-allow-origin') ?? '') !== '*',
-  home.headers.get('access-control-allow-origin') ?? '(no CORS header, as expected)',
-);
 
 // ---------------------------------------------------------------------------
 // Rejection paths — all of these fail before AI authorization
@@ -149,6 +144,32 @@ record(
   'missing-session request is rejected',
   noSession.status === 401,
   `status ${noSession.status}`,
+);
+
+/*
+ * CORS, checked where it can actually matter.
+ *
+ * Vercel's CDN adds `access-control-allow-origin: *` to static assets, so the
+ * prerendered page, the icon and the audio all carry it in production. That is not a
+ * finding: those files are public, identical for everybody, and the wildcard cannot be
+ * combined with credentials, so no cookie is ever exposed by it. An earlier version of
+ * this probe asserted against the homepage and therefore failed every night on a
+ * condition nobody should act on — a check that cries wolf is worse than no check.
+ *
+ * What matters is the dynamic surface: the API responses, which are the only ones bound
+ * to a session. Those must never be cross-origin readable.
+ */
+record(
+  'no wildcard CORS on API responses',
+  (noSession.headers.get('access-control-allow-origin') ?? '') !== '*',
+  noSession.headers.get('access-control-allow-origin') ?? '(no CORS header, as expected)',
+);
+record(
+  'static wildcard CORS grants no credentials',
+  (home.headers.get('access-control-allow-credentials') ?? '') !== 'true',
+  home.headers.get('access-control-allow-credentials')
+    ? `credentials allowed with ${home.headers.get('access-control-allow-origin')}`
+    : `origin ${home.headers.get('access-control-allow-origin') ?? '(none)'}, no credentials`,
 );
 
 const malformed = await json('/api/predict', '{"gameId":');
