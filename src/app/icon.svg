@@ -9,11 +9,15 @@
     The same monospace stack the interface uses, so the tab matches the wordmark it came
     from. `textLength` pins the width: if a browser substitutes a different mono face,
     the glyphs are still laid out to fill the same box rather than drifting out of it.
+
+    `y` is 44 rather than half of 64 because a baseline is not a centre line: the
+    parentheses descend below it, and measuring the rendered bounding box puts its
+    middle exactly on 32 at this value. Anything less reads as sitting high in the tab.
   -->
   <title>hum(ai)n</title>
   <text
     x="32"
-    y="41"
+    y="44"
     fill="#ff2b32"
     font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace"
     font-size="34"
