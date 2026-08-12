@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!--
+    The favicon: the (ai) out of the wordmark, in the error red, on nothing.
+
+    No background rectangle at all, so the glyphs sit directly on whatever the browser
+    puts behind them — a dark tab strip or a light one. The red carries enough contrast
+    either way, which a fixed backdrop would not.
+
+    The same monospace stack the interface uses, so the tab matches the wordmark it came
+    from. `textLength` pins the width: if a browser substitutes a different mono face,
+    the glyphs are still laid out to fill the same box rather than drifting out of it.
+  -->
+  <title>hum(ai)n</title>
+  <text
+    x="32"
+    y="41"
+    fill="#ff2b32"
+    font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace"
+    font-size="34"
+    font-weight="400"
+    letter-spacing="-1"
+    text-anchor="middle"
+    textLength="58"
+    lengthAdjust="spacingAndGlyphs"
+  >(ai)</text>
+</svg>
