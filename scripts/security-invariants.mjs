@@ -62,6 +62,7 @@ const NEVER_TRACKED = [
   /^blob-report(\/|$)/,
   /^playwright\/\.cache(\/|$)/,
   /^screenshots(\/|$)/,
+  /^campaign-assets(\/|$)/,
   /^\.git(\/|$)/,
   /^\.vercel(\/|$)/,
   /\.DS_Store$/,

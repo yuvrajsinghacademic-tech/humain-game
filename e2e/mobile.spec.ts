@@ -84,6 +84,113 @@ test.describe('phone viewport', () => {
   });
 });
 
+/**
+ * The Phase 2 surfaces on a phone.
+ *
+ * This is where most of the traffic will arrive: somebody scans a code on a wall and
+ * lands on a handset. So the campaign addresses, the documents and the post-game area
+ * are held to the same rule as the game itself — nothing scrolls sideways, and
+ * anything meant to be tapped can be.
+ */
+test.describe('phone viewport — the site around the game', () => {
+  const EDITORIAL_PATHS = [
+    '/about',
+    '/how-it-works',
+    '/darry',
+    '/behind-the-game',
+    '/faq',
+    '/privacy',
+    '/privacy-choices',
+    '/terms',
+  ];
+
+  test('every document fits, reads, and can be tapped', async ({ page }) => {
+    for (const path of EDITORIAL_PATHS) {
+      await page.goto(path);
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+      await expectNoHorizontalOverflow(page, path);
+
+      // Legal copy that needs pinching to read is not published copy. Measured on the
+      // body region specifically — the file line and the lede are paragraphs too, at
+      // deliberately different sizes.
+      const bodySize = await page.evaluate(() => {
+        const paragraph = document.querySelector('[data-testid="editorial-body"] p');
+        return paragraph ? parseFloat(getComputedStyle(paragraph).fontSize) : 0;
+      });
+      expect(bodySize, `${path} body copy must be legible`).toBeGreaterThanOrEqual(14);
+
+      // Footer links are the smallest thing on the page and still have to be tappable.
+      const link = await page.getByTestId('site-footer').locator('a').first().boundingBox();
+      expect(link!.height, `${path} footer link target`).toBeGreaterThanOrEqual(24);
+
+      // Scrolled to the bottom, the page still must not have grown sideways.
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      await expectNoHorizontalOverflow(page, `${path} (scrolled)`);
+    }
+  });
+
+  test('the menu’s site links are reachable without crowding the options', async ({ page }) => {
+    await page.goto(`/?seed=${SEED}`);
+    await enterFromBoot(page);
+    await expectNoHorizontalOverflow(page, 'menu with site links');
+
+    const privacy = page.getByTestId('menu-site-privacy');
+    await expect(privacy).toBeVisible();
+    const target = (await privacy.boundingBox())!;
+    expect(target.height, 'a real tap target').toBeGreaterThanOrEqual(24);
+
+    // Clear of the last option, so a thumb reaching for SETTINGS cannot hit it.
+    const settings = (await page.getByTestId('menu-settings').boundingBox())!;
+    expect(target.y).toBeGreaterThan(settings.y + settings.height);
+  });
+
+  test('a campaign route is the same game at phone width', async ({ page }) => {
+    await page.goto(`/sunset-b?seed=${SEED}`);
+    expect(new URL(page.url()).pathname).toBe('/sunset-b');
+    await enterFromBoot(page);
+    await expectNoHorizontalOverflow(page, 'campaign menu');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('hum(ai)n');
+  });
+
+  test('the share controls fit under the verdict', async ({ page }) => {
+    test.setTimeout(180_000);
+
+    await page.goto(`/?seed=${SEED}`);
+    await startGame(page);
+    await page.getByTestId('skip-assessment').click();
+
+    for (let round = 1; round <= 15; round += 1) {
+      await playRound(page, round % 3 === 0 ? 'B' : 'A');
+      await page.getByTestId('next-round').click();
+    }
+
+    await expect(page.getByTestId('final-numbers')).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByTestId('aftermath')).toBeVisible({ timeout: 20_000 });
+    await expectNoHorizontalOverflow(page, 'ending share area');
+
+    const copy = (await page.getByTestId('share-copy').boundingBox())!;
+    expect(copy.height, 'the share control is a real target').toBeGreaterThanOrEqual(44);
+    expect(copy.width).toBeLessThanOrEqual(page.viewportSize()!.width);
+
+    const again = (await page.getByTestId('play-again').boundingBox())!;
+    expect(again.height).toBeGreaterThanOrEqual(44);
+    // The verdict is above the whole thing, and still on the page.
+    const verdict = (await page.getByTestId('verdict-line').boundingBox())!;
+    expect(verdict.y).toBeLessThan(copy.y);
+
+    /*
+     * The ad clearance, at phone height, where it matters most: a thumb travelling to
+     * PLAY AGAIN must not be able to overshoot onto a click-through. Read from the
+     * layout system rather than from an ad element, since no ad is configured.
+     */
+    const clearance = await page
+      .getByTestId('aftermath')
+      .evaluate((node) => getComputedStyle(node).getPropertyValue('--postgame-ad-clearance').trim());
+    expect(clearance, 'the clearance must resolve to pixels').toMatch(/^[\d.]+px$/);
+    expect(parseFloat(clearance), 'ad clearance at phone height').toBeGreaterThanOrEqual(180);
+  });
+});
+
 test.describe('keyboard only', () => {
   test('boot, menu, warning and a question are all operable without a pointer', async ({ page }) => {
     await page.goto(`/?seed=${SEED}`);

@@ -14,14 +14,22 @@
  * wrapper, a provider or a suspense boundary, this inherits it in the same commit.
  * `tests/linkedinRoute.test.ts` asserts that identity.
  *
- * Title, description and icon still come from the root layout, unchanged. The two fields
- * set below are the only difference from `/`, and neither is visible to a player: they
- * exist because two addresses serving identical content is duplicate content, and a
- * campaign URL should not compete with the homepage for it.
+ * **Why this still has its own file.** Every other campaign address is served by the
+ * shared `src/app/[campaign]/page.tsx` route, which does exactly what this file does.
+ * This one predates it and is already in circulation, and a literal segment is matched
+ * before a dynamic one — so keeping the file is the cheapest possible guarantee that
+ * an address people have already clicked cannot change behaviour. It is registered in
+ * `CAMPAIGNS` like every other campaign, marked `ownRoute`, which is what keeps the
+ * shared route from also claiming this path.
+ *
+ * The metadata below is now produced by the shared campaign helper, so this route and
+ * the eight others cannot disagree about canonicalisation. It is still exactly two
+ * fields, and neither is visible to a player: two addresses serving identical content
+ * is duplicate content, and a campaign URL should not compete with the homepage for it.
  *
  *  - **canonical** names `/` as the real address, so ranking signals earned here
- *    consolidate there. Absolute rather than relative because no `metadataBase` is
- *    configured, and a relative canonical without one is ambiguous.
+ *    consolidate there. Absolute rather than relative because the value must be
+ *    unambiguous whatever `metadataBase` is set to.
  *  - **robots** is `index: false, follow: true` — keep this URL out of the index, but
  *    still crawl onward through its links. It overrides the layout's `index: true` for
  *    this route only.
@@ -30,11 +38,8 @@
  * analytics provider, no environment variable.
  */
 
-import type { Metadata } from 'next';
+import { campaignMetadata } from '@/lib/campaigns';
 
-export const metadata: Metadata = {
-  alternates: { canonical: 'https://www.willyoubereplaced.com/' },
-  robots: { index: false, follow: true },
-};
+export const metadata = campaignMetadata('linkedin');
 
 export { default } from '../page';
