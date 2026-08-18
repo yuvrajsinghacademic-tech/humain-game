@@ -1,0 +1,445 @@
+/*
+ * The editorial layer.
+ *
+ * These pages are not the game and must not pretend to be. The game is a contained
+ * horror experience that fills the viewport and takes the screen apart; this is a set
+ * of documents that have to be read, on a phone, in daylight, possibly by somebody
+ * reviewing the site rather than playing it.
+ *
+ * So the shared vocabulary is kept — true black, cold off-white, one restrained red,
+ * monospace throughout, hairline rules, tiny tracked-out caps, file numbers — and
+ * everything that fights reading is dropped: no glitch, no displacement, no chromatic
+ * separation, no corruption of the wordmark, no animated grain. The only atmosphere
+ * borrowed from the game is the static scanline field and the vignette, both held at
+ * a low fixed `--dread` by the layout, both entirely motionless.
+ *
+ * Reading measure is the governing constraint. Body copy is capped near 34rem, which
+ * is roughly 68 monospace characters — the upper end of comfortable — and the type is
+ * a full step larger than the game's interface text.
+ */
+
+.page {
+  /*
+   * A local dread level. The game writes `--dread` onto the document element and it
+   * can survive a client-side navigation; pinning it here means an editorial page
+   * always renders at the same faint texture whether it was reached from the ending
+   * of a lost game or typed into the address bar.
+   */
+  --dread: 0.05;
+  --editorial-measure: 34rem;
+  --editorial-column: 44rem;
+
+  position: relative;
+  z-index: 5;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  /* Air at the top, so the masthead is not jammed against the notch. */
+  padding: clamp(1.6rem, 6vw, 3.2rem) var(--gutter) 0;
+}
+
+.inner {
+  width: 100%;
+  max-width: var(--editorial-column);
+  margin: 0 auto;
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- masthead ------------------------------------------------------------ */
+
+.masthead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.9rem 1.4rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid var(--edge);
+}
+
+.mark {
+  font-family: var(--mono);
+  font-size: 1.0625rem;
+  letter-spacing: 0.02em;
+  color: var(--bone);
+  text-decoration: none;
+}
+
+.mark:hover,
+.mark:focus-visible {
+  color: var(--bone);
+}
+
+.markAi {
+  color: var(--red);
+}
+
+.mastheadNav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.15rem;
+}
+
+.mastheadLink {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--bone-faint);
+  text-decoration: none;
+  /* A comfortable tap target without visually enlarging the link. */
+  padding: 0.45rem 0;
+}
+
+.mastheadLink:hover,
+.mastheadLink:focus-visible {
+  color: var(--bone);
+}
+
+.mastheadLink[aria-current='page'] {
+  color: var(--bone-dim);
+}
+
+.play {
+  color: var(--red);
+}
+
+.play:hover,
+.play:focus-visible {
+  color: var(--red);
+  text-decoration: underline;
+  text-underline-offset: 0.35em;
+}
+
+/* --- article ------------------------------------------------------------- */
+
+.article {
+  padding: clamp(2.6rem, 9vw, 4.5rem) 0 clamp(3rem, 10vw, 5rem);
+}
+
+.file {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-family: var(--mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--bone-faint);
+  margin-bottom: 1.3rem;
+}
+
+.fileMark {
+  color: var(--red);
+}
+
+.title {
+  font-family: var(--mono);
+  font-size: clamp(1.5rem, 6.5vw, 2.35rem);
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  color: var(--bone);
+  max-width: 22ch;
+}
+
+.lede {
+  margin-top: 1.4rem;
+  max-width: var(--editorial-measure);
+  font-family: var(--mono);
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--bone-dim);
+}
+
+.body {
+  margin-top: clamp(2.4rem, 8vw, 3.4rem);
+}
+
+/* --- sections ------------------------------------------------------------ */
+
+.section {
+  margin-top: clamp(2.4rem, 8vw, 3.4rem);
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--edge);
+}
+
+.section:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 1.1rem;
+}
+
+.sectionNumber {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.2em;
+  color: var(--red);
+  font-variant-numeric: tabular-nums;
+}
+
+.sectionTitle {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--bone);
+}
+
+/* --- prose --------------------------------------------------------------- */
+
+.prose {
+  max-width: var(--editorial-measure);
+}
+
+.prose > * + * {
+  margin-top: 1.15rem;
+}
+
+.prose p,
+.prose li {
+  font-family: var(--mono);
+  font-size: 0.9375rem;
+  line-height: 1.78;
+  color: var(--bone-dim);
+}
+
+.prose strong {
+  color: var(--bone);
+  font-weight: 400;
+}
+
+.prose em {
+  color: var(--bone);
+  font-style: normal;
+  /* Emphasis without italics, which monospace faces render poorly. */
+  border-bottom: 1px solid var(--edge-live);
+}
+
+/*
+ * Body links.
+ *
+ * Listed for every region that can contain running text, not just `.prose` — the
+ * closing notes and the lede are prose too, and a link in one of them that missed
+ * this rule fell back to the browser's default blue and purple, which is the single
+ * most jarring thing that can happen on a page this restrained.
+ *
+ * Not written as `.page a`, which would out-specify the masthead and footer link
+ * classes and drag the navigation into the body style with it.
+ */
+.prose a,
+.note a,
+.lede a {
+  color: var(--bone);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+  text-decoration-color: var(--edge-live);
+  /* Long addresses must wrap rather than widen the page. */
+  overflow-wrap: anywhere;
+}
+
+.prose a:visited,
+.note a:visited,
+.lede a:visited {
+  /* Explicit: the default visited purple is the one colour outside the palette. */
+  color: var(--bone);
+}
+
+.prose a:hover,
+.prose a:focus-visible,
+.note a:hover,
+.note a:focus-visible,
+.lede a:hover,
+.lede a:focus-visible {
+  text-decoration-color: var(--red);
+}
+
+.prose ul {
+  margin-left: 0;
+  padding-left: 1.1rem;
+  list-style: none;
+}
+
+.prose li {
+  position: relative;
+  margin-top: 0.7rem;
+}
+
+.prose li::before {
+  content: '—';
+  position: absolute;
+  left: -1.1rem;
+  color: var(--bone-faint);
+}
+
+/* --- a labelled record, for the Darry file ------------------------------- */
+
+.record {
+  display: grid;
+  grid-template-columns: minmax(6.5rem, auto) 1fr;
+  gap: 0.55rem 1.4rem;
+  margin: 0;
+  padding: 1.2rem 0;
+  border-top: 1px solid var(--edge);
+  border-bottom: 1px solid var(--edge);
+  max-width: var(--editorial-measure);
+}
+
+.recordKey {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--bone-faint);
+  line-height: 1.9;
+}
+
+.recordValue {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
+  color: var(--bone);
+  line-height: 1.9;
+}
+
+.recordValueAlert {
+  color: var(--red);
+}
+
+/* --- question and answer ------------------------------------------------- */
+
+.qa {
+  max-width: var(--editorial-measure);
+  margin-top: 1.9rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--edge);
+}
+
+.qa:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.question {
+  font-family: var(--mono);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--bone);
+  margin-bottom: 0.75rem;
+}
+
+/* --- a quiet statement of fact, in running text -------------------------- */
+
+/*
+ * Used where the page has to report something rather than label something — that no
+ * consent manager is present, that a control could not be opened.
+ *
+ * Deliberately not `.recordKey`, which is what this used before. That class is a
+ * tracked-out uppercase label, and it is wrong the moment the content is a sentence:
+ * a paragraph set in caps at 0.24em is both louder than the prose around it and
+ * markedly harder to read, which is precisely backwards for a quiet fallback.
+ */
+/*
+ * Both selectors are needed. A `Section` wraps everything it is given in `.prose`, so
+ * inside one this competes with `.prose p` — which is (0,1,1) and would otherwise win
+ * on specificity alone, whatever the source order.
+ */
+.notice,
+.prose .notice {
+  max-width: var(--editorial-measure);
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  line-height: 1.7;
+  /*
+   * `--bone-dim`, not `--bone-faint`. The faint tone is for tracked-out labels of two
+   * or three words; this is a sentence carrying information somebody may be relying
+   * on, and it has to clear the contrast bar for body text on black.
+   */
+  color: var(--bone-dim);
+}
+
+/* --- a quiet aside, used for the "this is fiction" notes ----------------- */
+
+.note {
+  max-width: var(--editorial-measure);
+  margin-top: 2rem;
+  padding: 1rem 0 0;
+  border-top: 1px solid var(--edge);
+}
+
+.note p {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  line-height: 1.7;
+  color: var(--bone-faint);
+}
+
+/* --- an ad surface, when one is configured ------------------------------- */
+
+.advert {
+  max-width: var(--editorial-measure);
+  /* Deliberately a long way below the last paragraph. */
+  margin: clamp(3.2rem, 11vw, 5rem) 0 0;
+}
+
+/* --- footer -------------------------------------------------------------- */
+
+.footer {
+  flex: 0 0 auto;
+  margin-top: auto;
+  padding: 1.6rem 0 clamp(1.8rem, 6vw, 2.8rem);
+  border-top: 1px solid var(--edge);
+}
+
+.footerNav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.15rem;
+}
+
+.footerLink {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--bone-faint);
+  text-decoration: none;
+  padding: 0.45rem 0;
+}
+
+.footerLink:hover,
+.footerLink:focus-visible {
+  color: var(--bone);
+}
+
+.colophon {
+  margin-top: 1.2rem;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  line-height: 1.7;
+  color: var(--bone-faint);
+  max-width: var(--editorial-measure);
+}
+
+/* --- reduced motion ------------------------------------------------------ */
+
+/*
+ * Nothing in this layer animates, so there is nothing to switch off. The declaration
+ * is kept as a statement of intent: if a transition is ever added here, it is already
+ * covered.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .page * {
+    animation: none !important;
+  }
+}

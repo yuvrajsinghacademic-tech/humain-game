@@ -80,6 +80,9 @@ those claims are the instrument.
 | `npm run test:e2e` | Playwright: both paths, replay, keyboard, phone, reduced motion |
 | `npm run test:e2e:install` | Download the Chromium build Playwright needs |
 | `npm run verify` | lint → typecheck → unit tests → production build |
+| `npm run qr -- --list` | List every campaign address and the URL its code encodes |
+| `npm run qr -- sunset-a` | Write `campaign-assets/sunset-a.svg`, a QR code for that address |
+| `npm run qr -- --all` | Every campaign at once |
 
 Screenshot capture for reviewing the art direction:
 
@@ -191,6 +194,67 @@ are gone along with the storage they managed.
 The consent panel states all of this plainly: no camera, microphone, location,
 contacts or history; only in-game choices and timing summaries reach Darry; and the
 whole thing is entertainment, not a psychological diagnosis.
+
+---
+
+## The site around the game
+
+The game is one route. Around it sits a small, deliberately quiet layer that exists so
+hum(ai)n is also a legitimate website: something a person can read, a crawler can
+index, and an advertising review can assess.
+
+| Route | What it is |
+| --- | --- |
+| `/about` · `/how-it-works` · `/darry` · `/behind-the-game` · `/faq` | Editorial documents, server-rendered, no client JavaScript of their own |
+| `/privacy` · `/privacy-choices` · `/terms` | Legal, written against the actual implementation rather than from a template |
+| `/sitemap.xml` · `/robots.txt` · `/opengraph-image` | Indexing and the social preview card |
+| `/ads.txt` | 404 until a real AdSense publisher id is configured |
+
+They share the game's palette and typography but drop everything that fights reading:
+no glitch, no displacement, no animated grain. The atmosphere is one static scanline
+field held at a fixed low dread level, so a document reached from the ending of a lost
+game looks the same as one reached from the address bar.
+
+The game itself is untouched by all of it. The only addition inside the experience is
+a row of very small links at the extreme bottom of the title screen — `THE PROJECT ·
+PRIVACY · TERMS` — deliberately not labelled ABOUT, because the menu's ABOUT already
+means the in-game modal.
+
+### Campaign addresses
+
+Eleven of them: `/linkedin`, `/sunset-a`, `/sunset-b`, `/melrose`, `/dtla`,
+`/venice`, `/silverlake`, `/usc`, `/unlv`, `/handshake-resume`, `/handshake-ai`. Each
+is the same game at a second address, so a printed code or a posted link can be
+attributed from the page view alone — no query string, no cookie, no identifier, and
+nothing on screen that mentions where the player came from.
+
+All eleven resolve to the identical page component, are `noindex, follow`, canonicalise
+to `/`, and are excluded from the sitemap. Adding one is a single row in
+`src/lib/campaigns/index.ts`. See **`docs/CAMPAIGNS.md`**.
+
+### After the ending
+
+The reveal is unchanged and still gets the screen to itself. A fifth stage arrives
+afterwards, below a rule: a share control, PLAY AGAIN, and — if it is ever configured
+— an advertisement a long way further down. The share text is composed on the device
+from the two numbers already on screen; nothing is uploaded, no result page is minted,
+and no answer, timing, profile or verdict is in it.
+
+### Advertising
+
+None is running. With no AdSense variables configured, no script loads, no Google host
+is contacted, `/ads.txt` is a 404, every ad surface renders nothing, and the CSP is
+byte-identical to the ad-free one. Ads may only ever appear on editorial pages and in
+the post-game area, never during play — enforced by a test that reads the source of
+every gameplay module. See **`docs/MONETIZATION.md`**.
+
+### Analytics
+
+Vercel Web Analytics, plus six anonymous funnel events: `play_started`,
+`assessment_completed`, `booth_started`, `game_completed`, `play_again`,
+`share_clicked`. The helper in `src/lib/analytics/events.ts` accepts only those names
+and only an allowlisted set of property *values*, so no answer, profile, score,
+prediction or verdict can reach an analytics provider by any code path.
 
 ---
 
@@ -321,6 +385,11 @@ Standard Next.js App Router conventions — no `vercel.json` needed.
 | `GLOBAL_DAILY_OPENAI_CALL_LIMIT` | recommended | Start low, e.g. `300` |
 | `MOCK_AI` | no | Leave unset in production |
 | `NEXT_PUBLIC_ALLOW_SEED` | no | Test-only. Never set in production |
+| `NEXT_PUBLIC_CONTACT_EMAIL` | recommended | Shown on the legal pages. While unset they say so honestly |
+| `NEXT_PUBLIC_ADSENSE_CLIENT_ID` | no | `ca-pub-…`. Unset means no advertising anywhere |
+| `NEXT_PUBLIC_ADSENSE_SLOT_EDITORIAL` | no | Ad unit for the editorial surface |
+| `NEXT_PUBLIC_ADSENSE_SLOT_POSTGAME` | no | Ad unit for the post-game surface |
+| `NEXT_PUBLIC_AD_PLACEHOLDERS` | no | Development only. Draws empty ad outlines; loads nothing |
 
 4. `vercel` for a preview, `vercel --prod` for production.
 

@@ -322,6 +322,66 @@ describe('SETTINGS', () => {
   });
 });
 
+/**
+ * The site links at the foot of the title screen.
+ *
+ * A site that shows advertising has to make its policies reachable from the front
+ * page, and a player who wants to know what is being measured should not have to
+ * guess. The whole difficulty is doing that without putting a fourth option next to
+ * PLAY NOW — so these assertions are mostly about the links being *subordinate*
+ * rather than about them existing.
+ */
+describe('the main menu’s site links', () => {
+  function open() {
+    render(<Menu onPlay={vi.fn()} musicOn onMusicChange={vi.fn()} />);
+  }
+
+  it('reaches the project page, the privacy policy and the terms', () => {
+    open();
+    expect(screen.getByTestId('menu-site-about')).toHaveAttribute('href', '/about');
+    expect(screen.getByTestId('menu-site-privacy')).toHaveAttribute('href', '/privacy');
+    expect(screen.getByTestId('menu-site-terms')).toHaveAttribute('href', '/terms');
+  });
+
+  it('does not call itself ABOUT, which already means the modal', () => {
+    open();
+    // Two controls one word apart, meaning two different things, would be worse than a
+    // slightly longer label.
+    expect(screen.getByTestId('menu-site-about')).toHaveTextContent('THE PROJECT');
+    expect(screen.getByTestId('menu-about')).toHaveTextContent('ABOUT');
+    expect(screen.getAllByRole('button', { name: 'ABOUT' })).toHaveLength(1);
+  });
+
+  it('leaves the three options as the only buttons on the screen', () => {
+    open();
+    // Links, not buttons: they navigate away, and they must not read as game controls
+    // to a screen reader any more than they do to an eye.
+    expect(screen.getAllByRole('button')).toHaveLength(3);
+    expect(screen.getAllByRole('link')).toHaveLength(3);
+  });
+
+  it('is a separate landmark from the main menu', () => {
+    open();
+    expect(screen.getByRole('navigation', { name: 'Main menu' })).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'About this site' })).toBeInTheDocument();
+  });
+
+  it('is drawn smaller and dimmer than the options it sits beneath', () => {
+    open();
+    const option = window.getComputedStyle(screen.getByTestId('play-now'));
+    const link = window.getComputedStyle(screen.getByTestId('menu-site-privacy'));
+    expect(parseFloat(link.fontSize)).toBeLessThan(parseFloat(option.fontSize));
+    expect(link.color).not.toBe(option.color);
+  });
+
+  it('still gives a finger something to hit', () => {
+    open();
+    // Small type, real target: the padding does the work rather than the font size.
+    const link = window.getComputedStyle(screen.getByTestId('menu-site-terms'));
+    expect(parseFloat(link.paddingTop)).toBeGreaterThan(0);
+  });
+});
+
 describe('the scare level persists nothing', () => {
   it('writes no key of its own', async () => {
     const before = Object.keys(window.localStorage);

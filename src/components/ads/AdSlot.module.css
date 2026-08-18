@@ -1,0 +1,69 @@
+/*
+ * The ad surface.
+ *
+ * Quiet on purpose: a hairline rule, a tiny caps label, and a reserved block. It
+ * should read as a marked-off region of the page rather than as part of the piece —
+ * an ad that tried to look like hum(ai)n would be worse, not better.
+ *
+ * The frame carries a `min-height` so the space is reserved before the unit fills
+ * it. Without it the ad arrives late and shoves everything below it down, which is
+ * the single most damaging thing an ad can do to a page.
+ */
+
+.slot {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  /* Never wider than its column, whatever the unit decides to render. */
+  overflow: hidden;
+}
+
+.label {
+  margin: 0 0 0.55rem;
+  font-family: var(--mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--bone-faint);
+}
+
+.frame {
+  border-top: 1px solid var(--edge);
+  border-bottom: 1px solid var(--edge);
+  padding: 0.9rem 0;
+  /* Reserved height: a mobile responsive unit is ~100px, desktop taller. */
+  min-height: 116px;
+  display: block;
+}
+
+@media (min-width: 40rem) {
+  .frame {
+    min-height: 148px;
+  }
+}
+
+.unit {
+  display: block;
+  width: 100%;
+  /* An ad must never be able to push the page sideways. */
+  max-width: 100%;
+}
+
+/* --- development placeholder only ---------------------------------------- */
+
+.empty {
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--edge-live);
+  border-radius: 0;
+}
+
+.emptyNote {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  color: var(--bone-faint);
+  text-align: center;
+  padding: 0 1rem;
+}

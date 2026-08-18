@@ -103,8 +103,17 @@ test.describe('/linkedin', () => {
   test('is canonicalised to the homepage and kept out of the index', async ({ request }) => {
     const html = await request.get('/linkedin', { maxRedirects: 0 }).then((r) => r.text());
 
+    /*
+     * The trailing slash is optional here, and that is not the assertion going soft.
+     *
+     * `https://www.willyoubereplaced.com` and `https://www.willyoubereplaced.com/` are
+     * the same URL, and which one Next emits depends on whether `metadataBase` is
+     * configured: with one set, an absolute canonical pointing at the site root is
+     * normalised to the bare origin. The claim worth defending is that the canonical
+     * names the homepage — not which of two identical spellings the framework picked.
+     */
     expect(html).toMatch(
-      /<link[^>]+rel="canonical"[^>]+href="https:\/\/www\.willyoubereplaced\.com\/"/,
+      /<link[^>]+rel="canonical"[^>]+href="https:\/\/www\.willyoubereplaced\.com\/?"/,
     );
     // Next renders `{ index: false, follow: true }` as exactly this.
     expect(html).toMatch(/<meta[^>]+name="robots"[^>]+content="noindex, follow"/);

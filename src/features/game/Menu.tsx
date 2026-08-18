@@ -14,6 +14,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { Logo } from '@/components/Logo';
 import { TvStatic } from '@/components/TvStatic';
 import { MENU_ACCENT_LAYERS, useGlitch } from '@/lib/visual/useGlitch';
@@ -116,6 +117,43 @@ export function Menu({
             </button>
           </nav>
         </div>
+
+        {/*
+          The site, as opposed to the game.
+
+          Pinned to the very bottom of the title screen, at the smallest legible size,
+          in the faintest colour the palette has — well outside the three options above
+          and never in the same visual group as them. This has to exist: a site that
+          shows advertising needs its policies reachable from the front page, and a
+          player who wants to know what is being measured should not have to guess.
+
+          Deliberately not labelled ABOUT. The menu already has an ABOUT, which opens
+          the modal describing the game, and two controls with one word meaning two
+          things would be worse than a slightly longer label. THE PROJECT leaves the
+          game's own vocabulary alone.
+
+          `prefetch={false}` on all three. Almost nobody arriving at a title screen is
+          on their way to a privacy policy, and speculatively downloading three
+          documents to make the rare case marginally faster is the wrong trade on a
+          phone that has just scanned a code on a wall.
+        */}
+        <nav className={styles.site} aria-label="About this site">
+          <Link className={styles.siteLink} href="/about" prefetch={false} data-testid="menu-site-about">
+            THE PROJECT
+          </Link>
+          <span className={styles.siteDot} aria-hidden="true">
+            ·
+          </span>
+          <Link className={styles.siteLink} href="/privacy" prefetch={false} data-testid="menu-site-privacy">
+            PRIVACY
+          </Link>
+          <span className={styles.siteDot} aria-hidden="true">
+            ·
+          </span>
+          <Link className={styles.siteLink} href="/terms" prefetch={false} data-testid="menu-site-terms">
+            TERMS
+          </Link>
+        </nav>
       </main>
 
       {popup === 'about' ? <About onClose={closePopup} /> : null}

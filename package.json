@@ -13,6 +13,7 @@
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install chromium",
     "security": "node scripts/security-invariants.mjs",
+    "qr": "node scripts/generate-qr.mjs",
     "probe": "node scripts/production-probe.mjs",
     "verify": "npm run lint && npm run typecheck && npm test && npm run build && npm run security"
   },
@@ -39,6 +40,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.0",
     "jsdom": "^30.0.1",
+    "qrcode-generator": "2.0.4",
     "typescript": "^5",
     "vitest": "^4.1.10"
   }

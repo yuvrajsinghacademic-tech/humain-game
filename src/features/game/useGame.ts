@@ -35,6 +35,7 @@ import {
 } from '@/features/prediction/api';
 import type { LocalTicket } from '@/features/prediction/localTicket';
 import { purgeRetiredProfilesFromWindow } from '@/lib/storage';
+import { track } from '@/lib/analytics/events';
 import { getAudio } from '@/lib/audio/track';
 import { LOADING_MIN_MS } from '@/features/ending/Ending';
 import {
@@ -141,6 +142,11 @@ export function useGame(): UseGame {
     if (state.resultsReady) return;
 
     runOnce(`results:${state.gameId ?? 'none'}`, async () => {
+      // Reaching this phase *is* completing the assessment: it is entered only by
+      // answering the last question. Nothing about the answers is sent — see
+      // `src/lib/analytics/events.ts`, which will not carry them.
+      track('assessment_completed');
+
       const profile = deriveProfile(state.carriedRecords);
       dispatch({ type: 'PROFILE_DERIVED', profile });
 
@@ -226,6 +232,23 @@ export function useGame(): UseGame {
     });
   }, [state.phase, state.gameId, state.profile, state.rounds, runOnce]);
 
+  /*
+   * --- The funnel ------------------------------------------------------------
+   *
+   * Six counters, and that is the entire product-analytics surface. They answer one
+   * question: of the people who arrive from a printed code, how many start, how many
+   * finish, and how many share. Reaching the ending is recorded here rather than in
+   * the reveal effect above so it fires once the player is actually looking at the
+   * verdict, and it is keyed by game id so a replay counts as a second completion.
+   *
+   * No event carries a profile, an answer, a score, a prediction or a verdict. That
+   * is enforced by the helper, not by this call site.
+   */
+  useEffect(() => {
+    if (state.phase !== 'ending') return;
+    runOnce(`completed:${state.gameId ?? 'none'}`, () => track('game_completed'));
+  }, [state.phase, state.gameId, runOnce]);
+
   // --- Player intents ---------------------------------------------------------
 
   /**
@@ -255,6 +278,8 @@ export function useGame(): UseGame {
    * screen changes underneath it. Nothing is stopped, restarted or rewound.
    */
   const acceptConsent = useCallback(() => {
+    // The point a visitor becomes a player: they have read the warning and gone on.
+    track('play_started');
     void getAudio().setMode('game');
     dispatch({ type: 'ACCEPT_CONSENT' });
   }, []);
@@ -269,6 +294,7 @@ export function useGame(): UseGame {
 
   const skipAssessment = useCallback(() => {
     void (async () => {
+      track('booth_started');
       const gameId = await startSession();
       /*
        * No questions were answered, so there is nothing to interpret and no
@@ -327,6 +353,8 @@ export function useGame(): UseGame {
   );
 
   const enterBooth = useCallback(() => {
+    // First entry only. A replay is counted as `play_again`, not as a second start.
+    track('booth_started');
     dispatch({ type: 'ENTER_BOOTH', odds: rollOdds() });
   }, [rollOdds]);
 
@@ -397,6 +425,7 @@ export function useGame(): UseGame {
 
   const playAgain = useCallback(() => {
     void (async () => {
+      track('play_again');
       /*
        * Straight back into the booth. The assessment is not repeated and the
        * interpretation is not requested again — a new game id is issued so the

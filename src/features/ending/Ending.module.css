@@ -112,8 +112,143 @@
   text-align: left;
 }
 
+/* --- after the reveal ---------------------------------------------------- */
+
+/*
+ * Everything below the verdict.
+ *
+ * A rule, then a great deal of air. The section is deliberately quieter than the
+ * numbers above it — smaller type, dimmer colour, no red — so that a player reading
+ * the two percentages is not simultaneously being sold something. It is the same
+ * screen, but it is plainly a different register.
+ */
+.aftermath {
+  /*
+   * Named, because two other rules depend on knowing it. The advertising surface has
+   * to subtract this gap from its own margin in order to express its clearance as a
+   * distance from the PLAY AGAIN button rather than from its own box.
+   */
+  --aftermath-gap: 1.5rem;
+
+  /*
+   * How far an advertisement must sit from PLAY AGAIN — measured button edge to the
+   * first pixel of the ad block, including its ADVERTISEMENT label.
+   *
+   * 180px is the floor and it is not a round number for its own sake: it is roughly
+   * four stacked touch targets, far enough that a thumb travelling to PLAY AGAIN
+   * cannot overshoot onto a click-through, and far enough that the ad is off-screen
+   * on every handset when the verdict is in view.
+   *
+   * Above the floor it scales with the viewport rather than sitting at a fixed
+   * height: a tall screen has room to push the ad further down, and a short one is
+   * held at 180px by `max()`. No spacer element, no magic number in a component.
+   */
+  --postgame-ad-clearance: max(180px, 24vh);
+
+  width: 100%;
+  max-width: 22rem;
+  margin-top: clamp(2.6rem, 9vh, 4rem);
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--edge);
+  display: grid;
+  justify-items: center;
+  gap: var(--aftermath-gap);
+}
+
+.terminated {
+  font-family: var(--mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--bone-faint);
+}
+
+.share {
+  display: grid;
+  justify-items: center;
+  gap: 0.85rem;
+  width: 100%;
+}
+
+.shareLabel {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+}
+
+.shareActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+}
+
+/*
+ * Sized to their content, not stretched to the row.
+ *
+ * A full-width COPY RESULT ends up visibly wider than PLAY AGAIN below it, which
+ * inverts the hierarchy — the secondary action should not be the largest control on
+ * the screen. Content width plus a floor keeps the pair narrower than PLAY AGAIN
+ * whether one button is rendered or two.
+ */
+.shareButton {
+  flex: 0 1 auto;
+  min-width: 8.5rem;
+  min-height: 46px;
+  padding: 0.8rem 1.2rem;
+  border: 1px solid var(--edge-live);
+  background: transparent;
+  color: var(--bone-dim);
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.2em;
+  transition: border-color var(--step) var(--ease), color var(--step) var(--ease);
+}
+
+.shareButton:hover,
+.shareButton:focus-visible {
+  border-color: var(--bone-faint);
+  color: var(--bone);
+}
+
+.shareButton:focus-visible {
+  outline: 2px solid var(--bone);
+  outline-offset: 3px;
+}
+
+/*
+ * Reserved height, so announcing "Copied." does not move the PLAY AGAIN button out
+ * from under a finger that is already on the way to it.
+ */
+.shareStatus {
+  min-height: 1.2em;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  color: var(--bone-faint);
+}
+
+/*
+ * The advertising surface, if one is ever configured.
+ *
+ * The grid gap above this element already contributes to the distance from PLAY
+ * AGAIN, so it is subtracted out here. That is what makes `--postgame-ad-clearance`
+ * mean what it says — the real button-edge-to-ad-edge distance — rather than a
+ * number that happens to be 24px short of it.
+ *
+ * Nothing renders inside this wrapper unless an AdSense account is configured, so on
+ * the site as it stands the whole rule costs nothing.
+ */
+.advert {
+  width: 100%;
+  margin-top: calc(var(--postgame-ad-clearance) - var(--aftermath-gap));
+}
+
 .again {
-  margin-top: 2rem;
+  margin-top: 0;
   display: grid;
   gap: 0.8rem;
   justify-items: center;

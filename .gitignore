@@ -50,6 +50,11 @@ next-env.d.ts
 # screenshot capture output
 /screenshots
 
+# generated campaign QR codes — regenerate with `npm run qr` rather than committing
+# them. They are derived from src/lib/campaigns/index.ts, so the registry is the
+# source of truth and a committed copy could only ever go stale.
+/campaign-assets
+
 # extracted audio assets are committed; source recordings never are
 *.mov
 *.MOV
