@@ -310,6 +310,29 @@ test.describe('advertising', () => {
     expect(Math.round(margin + parseFloat(measured.gap))).toBe(Math.round(clearance));
   });
 
+  test('declares site ownership to AdSense without loading anything from it', async ({
+    request,
+  }) => {
+    /*
+     * The verification tag is a claim about who owns the domain, and Google reads it by
+     * fetching this page. Asserted against the served HTML rather than the metadata
+     * object, because what matters is what leaves the server.
+     */
+    const html = await (await request.get('/')).text();
+    expect(html).toMatch(
+      /<meta name="google-adsense-account" content="ca-pub-5771510660460861"\s*\/?>/,
+    );
+    // Exactly one, and inside the head.
+    const tags = html.match(/<meta name="google-adsense-account"[^>]*>/g) ?? [];
+    expect(tags).toHaveLength(1);
+    expect(html.indexOf('google-adsense-account')).toBeLessThan(html.indexOf('</head>'));
+    // Naming the account must not have started serving for it.
+    expect(html).not.toContain('googlesyndication');
+    expect(html).not.toContain('adsbygoogle');
+    expect(html).not.toContain('data-ad-client');
+    expect(html).not.toMatch(/enable_page_level_ads|data-ad-frequency-hint/);
+  });
+
   test('publishes no ads.txt while no publisher account is configured', async ({ request }) => {
     const response = await request.get('/ads.txt');
     expect(response.status(), 'an invented publisher record would be worse than none').toBe(404);
