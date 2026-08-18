@@ -45,9 +45,16 @@ describe('share text', () => {
     // sticker they never saw, and quietly corrupt the placement numbers.
     expect(SHARE_URL).toBe('https://www.willyoubereplaced.com/');
     expect(shareData(result).url).toBe(SHARE_URL);
-    expect(shareClipboardText(result)).not.toMatch(
-      /https:\/\/www\.willyoubereplaced\.com\/[a-z]/,
-    );
+    /*
+     * Compared by equality rather than by pattern. Every absolute address the share
+     * text carries must be the homepage itself, and a campaign route would show up
+     * here as a second, different token — which says the same thing a hostname regex
+     * was saying, without the regex needing an anchor to be trustworthy.
+     */
+    const absolute = shareClipboardText(result)
+      .split(/\s+/)
+      .filter((token) => token.startsWith('https://'));
+    expect(absolute).toEqual([SHARE_URL]);
   });
 
   it('leaks nothing private, even when handed it', () => {
