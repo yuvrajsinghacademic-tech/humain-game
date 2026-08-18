@@ -23,7 +23,7 @@
  * shared route from also claiming this path.
  *
  * The metadata below is now produced by the shared campaign helper, so this route and
- * the eight others cannot disagree about canonicalisation. It is still exactly two
+ * the ten others cannot disagree about canonicalisation. It is still exactly two
  * fields, and neither is visible to a player: two addresses serving identical content
  * is duplicate content, and a campaign URL should not compete with the homepage for it.
  *

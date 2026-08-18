@@ -4,7 +4,7 @@
  * `/sunset-a`, `/melrose`, `/usc` and the rest all resolve here, and here re-exports
  * the root page component — so a campaign URL is not *like* the game, it *is* the
  * game, by reference. There is no second implementation to keep in step, and a
- * change to `/` reaches all nine addresses in the same edit.
+ * change to `/` reaches all eleven addresses in the same edit.
  *
  * Three things make this safe to leave at the root of the route tree:
  *

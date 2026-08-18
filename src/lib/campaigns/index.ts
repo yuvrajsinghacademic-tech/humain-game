@@ -67,6 +67,11 @@ export const CAMPAIGNS: readonly Campaign[] = [
   // Campus placements.
   { slug: 'usc', channel: 'campus', placement: 'University of Southern California' },
   { slug: 'unlv', channel: 'campus', placement: 'University of Nevada, Las Vegas' },
+
+  // Handshake. Online rather than printed, like /linkedin, so the platform and the
+  // angle together are the placement — two addresses, not one placement A/B tested.
+  { slug: 'handshake-resume', channel: 'social', placement: 'Handshake — resume' },
+  { slug: 'handshake-ai', channel: 'social', placement: 'Handshake — AI' },
 ] as const;
 
 /** The shape a slug must have to be printable, typable and route-safe. */

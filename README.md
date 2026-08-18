@@ -222,12 +222,13 @@ means the in-game modal.
 
 ### Campaign addresses
 
-Nine of them: `/linkedin`, `/sunset-a`, `/sunset-b`, `/melrose`, `/dtla`, `/venice`,
-`/silverlake`, `/usc`, `/unlv`. Each is the same game at a second address, so a printed
-code can be attributed from the page view alone — no query string, no cookie, no
-identifier, and nothing on screen that mentions where the player came from.
+Eleven of them: `/linkedin`, `/sunset-a`, `/sunset-b`, `/melrose`, `/dtla`,
+`/venice`, `/silverlake`, `/usc`, `/unlv`, `/handshake-resume`, `/handshake-ai`. Each
+is the same game at a second address, so a printed code or a posted link can be
+attributed from the page view alone — no query string, no cookie, no identifier, and
+nothing on screen that mentions where the player came from.
 
-All nine resolve to the identical page component, are `noindex, follow`, canonicalise
+All eleven resolve to the identical page component, are `noindex, follow`, canonicalise
 to `/`, and are excluded from the sitemap. Adding one is a single row in
 `src/lib/campaigns/index.ts`. See **`docs/CAMPAIGNS.md`**.
 

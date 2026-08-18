@@ -74,6 +74,9 @@ build.
   meaningless label.
 - **A suffix letter means a creative, not a location.** `sunset-a` and `sunset-b` are
   two different posters on the same street.
+- **A suffix word means a separate address, not a creative.** `handshake-resume` and
+  `handshake-ai` are two placements on one platform: each carries its own `placement`
+  and no `creative`, so they are counted separately rather than compared as a pair.
 - Neighbourhood or institution, spelled the way a local would: `dtla`, `silverlake`,
   `usc`.
 - Short. It sits under a QR code and occasionally gets typed.
@@ -108,7 +111,7 @@ you are measuring the block, not the poster.
 
 ## How the SEO side works, and why
 
-Nine addresses serving one page is duplicate content. Left alone, campaign URLs would
+Eleven addresses serving one page is duplicate content. Left alone, campaign URLs would
 compete with the homepage for the ranking the homepage should have.
 
 Each campaign route therefore declares exactly two metadata fields, from
@@ -140,6 +143,7 @@ Vercel Web Analytics → Pages. Each campaign address appears as its own row.
 | Did Sunset work? | Page views on `/sunset-a` + `/sunset-b` |
 | Which poster worked? | The two rows compared against each other |
 | Did Melrose beat DTLA? | `/melrose` vs `/dtla` views |
+| Did Handshake work? | Page views on `/handshake-resume` + `/handshake-ai` |
 | Did they actually start? | `play_started` events against arrivals |
 | Did they finish? | `game_completed` against `play_started` |
 | Did they share? | `share_clicked` against `game_completed` |

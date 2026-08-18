@@ -22,6 +22,8 @@ const CAMPAIGN_SLUGS = [
   'silverlake',
   'usc',
   'unlv',
+  'handshake-resume',
+  'handshake-ai',
 ];
 
 const EDITORIAL_PATHS = [
@@ -104,11 +106,21 @@ test.describe('campaign routes', () => {
   });
 
   test('says nothing to the player about where they came from', async ({ page }) => {
-    await page.goto(`/melrose?seed=${SEED}`);
-    await enterFromBoot(page);
-    const text = (await page.locator('body').innerText()).toLowerCase();
-    for (const word of ['melrose', 'campaign', 'sunset', 'referral', 'you came from']) {
-      expect(text, `the menu must not mention ${word}`).not.toContain(word);
+    /*
+     * One printed address and one online one. The slug does appear in the router
+     * payload, exactly as it does on every campaign route — what must never happen is
+     * it reaching the screen, so this reads visible text rather than the HTML.
+     */
+    for (const [path, ownWord] of [
+      ['/melrose', 'melrose'],
+      ['/handshake-resume', 'handshake'],
+    ] as const) {
+      await page.goto(`${path}?seed=${SEED}`);
+      await enterFromBoot(page);
+      const text = (await page.locator('body').innerText()).toLowerCase();
+      for (const word of [ownWord, 'campaign', 'sunset', 'referral', 'you came from', 'resume']) {
+        expect(text, `${path}: the menu must not mention ${word}`).not.toContain(word);
+      }
     }
   });
 });
@@ -384,7 +396,9 @@ test.describe('the share loop', () => {
     expect(copied).toContain('willyoubereplaced.com');
     // The share sends a friend to the homepage, never to a campaign address.
     expect(copied).toContain('https://www.willyoubereplaced.com/');
-    expect(copied).not.toMatch(/\/(sunset|melrose|dtla|venice|silverlake|usc|unlv|linkedin)/);
+    expect(copied).not.toMatch(
+      /\/(sunset|melrose|dtla|venice|silverlake|usc|unlv|linkedin|handshake)/,
+    );
     // Nothing about how they played.
     expect(copied).not.toMatch(/winStay|leftBias|profile|reasoning|session|round \d/i);
   });

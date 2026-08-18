@@ -62,6 +62,27 @@ describe('the campaign registry', () => {
     expect(b?.creative).toBeTruthy();
   });
 
+  it('keeps the two Handshake addresses separate rather than pairing them', () => {
+    // Deliberately not the Sunset arrangement: these are two placements that happen to
+    // share a prefix, not two creatives at one placement. Asserted so that a later
+    // reader does not "fix" them into an A/B pair and silently merge the comparison.
+    const resume = findCampaign('handshake-resume');
+    const ai = findCampaign('handshake-ai');
+    expect(resume?.channel).toBe('social');
+    expect(ai?.channel).toBe('social');
+    expect(resume?.placement).not.toBe(ai?.placement);
+    expect(resume?.creative).toBeUndefined();
+    expect(ai?.creative).toBeUndefined();
+  });
+
+  it('serves both Handshake addresses from the shared route, with no file of their own', () => {
+    // Only /linkedin predates the shared route, so nothing new should ever be ownRoute.
+    for (const slug of ['handshake-resume', 'handshake-ai']) {
+      expect(findCampaign(slug)?.ownRoute, `${slug} must not claim its own file`).toBeUndefined();
+      expect(sharedCampaignSlugs()).toContain(slug);
+    }
+  });
+
   it('contains every address that has been announced', () => {
     for (const slug of [
       'linkedin',
@@ -73,13 +94,15 @@ describe('the campaign registry', () => {
       'silverlake',
       'usc',
       'unlv',
+      'handshake-resume',
+      'handshake-ai',
     ]) {
       expect(isCampaignSlug(slug), `${slug} is missing from CAMPAIGNS`).toBe(true);
     }
   });
 
   it('rejects anything not registered', () => {
-    for (const slug of ['fairfax-a', 'about', 'privacy', '', 'SUNSET-A']) {
+    for (const slug of ['fairfax-a', 'about', 'privacy', '', 'SUNSET-A', 'handshake']) {
       expect(isCampaignSlug(slug)).toBe(false);
     }
   });
@@ -87,6 +110,7 @@ describe('the campaign registry', () => {
   it('builds the exact URL a QR code must encode', () => {
     expect(campaignUrl('sunset-a')).toBe('https://www.willyoubereplaced.com/sunset-a');
     expect(campaignUrl('usc')).toBe(`${SITE_URL}/usc`);
+    expect(campaignUrl('handshake-resume')).toBe(`${SITE_URL}/handshake-resume`);
   });
 });
 

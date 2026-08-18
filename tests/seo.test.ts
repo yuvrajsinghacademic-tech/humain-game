@@ -10,7 +10,7 @@ import { SITE_URL } from '@/lib/site/config';
 /**
  * What a crawler sees.
  *
- * The load-bearing claim is the one about campaign addresses: nine URLs serve the
+ * The load-bearing claim is the one about campaign addresses: eleven URLs serve the
  * identical page, and if they competed for it in search the homepage would lose
  * ranking to its own marketing. So they are `noindex`, canonicalised to `/`, and
  * absent from the sitemap — but deliberately *not* disallowed in robots.txt, because

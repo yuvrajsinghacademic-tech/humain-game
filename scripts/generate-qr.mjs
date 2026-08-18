@@ -147,6 +147,9 @@ const campaigns = readCampaigns();
 const siteUrl = readSiteUrl();
 const slugs = campaigns.map((campaign) => campaign.slug);
 
+/** Widest slug in the registry, so the listings below stay in columns as it grows. */
+const SLUG_COLUMN = Math.max(...slugs.map((slug) => slug.length));
+
 if (has('--help') || has('-h')) {
   console.log(
     [
@@ -167,7 +170,7 @@ if (has('--list')) {
   console.log(`campaigns (${campaigns.length}) — ${siteUrl}\n`);
   for (const campaign of campaigns) {
     const detail = [campaign.placement, campaign.creative].filter(Boolean).join(' · ');
-    console.log(`  /${campaign.slug.padEnd(12)} ${detail}`);
+    console.log(`  /${campaign.slug.padEnd(SLUG_COLUMN)} ${detail}`);
   }
   process.exit(0);
 }
@@ -203,8 +206,8 @@ for (const slug of requested) {
 
   const campaign = campaigns.find((entry) => entry.slug === slug);
   const detail = [campaign?.placement, campaign?.creative].filter(Boolean).join(' · ');
-  console.log(`  ${slug.padEnd(12)} → ${url}`);
-  if (detail) console.log(`  ${''.padEnd(12)}   ${detail}`);
+  console.log(`  ${slug.padEnd(SLUG_COLUMN)} → ${url}`);
+  if (detail) console.log(`  ${''.padEnd(SLUG_COLUMN)}   ${detail}`);
 }
 
 console.log('\nRead the URL under each code before printing. Then scan the printed proof.');
