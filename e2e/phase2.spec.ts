@@ -333,10 +333,25 @@ test.describe('advertising', () => {
     expect(html).not.toMatch(/enable_page_level_ads|data-ad-frequency-hint/);
   });
 
-  test('publishes no ads.txt while no publisher account is configured', async ({ request }) => {
+  test('publishes ads.txt naming the verified account, and nothing more', async ({ request }) => {
     const response = await request.get('/ads.txt');
-    expect(response.status(), 'an invented publisher record would be worse than none').toBe(404);
-    expect(await response.text()).not.toContain('pub-');
+    expect(response.status()).toBe(200);
+    expect(response.headers()['content-type']).toContain('text/plain');
+    // Byte for byte, one line, trailing newline included.
+    expect(await response.text()).toBe(
+      'google.com, pub-5771510660460861, DIRECT, f08c47fec0942fa0\n',
+    );
+  });
+
+  test('publishing ads.txt did not start serving anything', async ({ request }) => {
+    // The record authorises an account to sell inventory; it does not create inventory.
+    const html = await (await request.get('/')).text();
+    expect(html).not.toContain('googlesyndication');
+    expect(html).not.toContain('adsbygoogle');
+    expect(html).not.toContain('data-ad-client');
+    expect(html).not.toMatch(/enable_page_level_ads|data-ad-frequency-hint/);
+    // And the ownership tag it derives from is still there.
+    expect(html).toContain('google-adsense-account');
   });
 });
 

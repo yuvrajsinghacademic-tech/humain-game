@@ -19,7 +19,9 @@ With no environment variables set — the state of this repository:
 
 - no advertising script is loaded, on any page, at any point;
 - no request is made to any Google host as a result of a visit;
-- `/ads.txt` returns **404**, rather than a record that looks valid and is not;
+- `/ads.txt` publishes one `DIRECT` record for the **verified** account — an
+  authorisation statement, not a serving switch, and the one thing here that is not
+  gated on the environment variables;
 - every `<AdSlot>` renders `null` — no element, no reserved space, no console output;
 - the emitted Content-Security-Policy is **byte-identical** to the ad-free one.
 
@@ -137,12 +139,15 @@ google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0
 
 `f08c47fec0942fa0` is Google's own published certification authority id, identical for
 every AdSense publisher. It is not a secret and is not guessed. The `pub-` number is
-derived from the configured `ca-pub-` id.
+derived from the verified `ca-pub-` account id in `src/lib/ads/verification.ts`, so
+the two cannot disagree and there is no second value to maintain.
 
-With nothing configured the route returns 404. That is deliberate: a plausible-looking
-publisher number either belongs to nobody, in which case the record is noise, or
-belongs to somebody else, in which case this site is publicly authorising a stranger
-to sell its inventory.
+Before the account existed this route returned 404, deliberately: a plausible-looking
+publisher number either belongs to nobody, in which case the record is noise, or belongs
+to somebody else, in which case this site is publicly authorising a stranger to sell its
+inventory. Now that the account is verified, the record is the honest answer — and it is
+not gated on `NEXT_PUBLIC_ADSENSE_CLIENT_ID`, because buyers and Google's own site
+review read this file before anything is served.
 
 **Verify after enabling:** `curl https://www.willyoubereplaced.com/ads.txt` and check
 the number matches the AdSense account exactly. A wrong `ads.txt` is one of the most

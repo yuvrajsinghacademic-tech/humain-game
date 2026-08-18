@@ -26,6 +26,8 @@
  * substitution and a computed key would inline as `undefined`.
  */
 
+import { ADSENSE_VERIFICATION_ID } from './verification';
+
 /** The ad surfaces this site has. Adding one here is a deliberate act. */
 export type AdSurface = 'editorial' | 'postgame';
 
@@ -82,17 +84,29 @@ export function adPlaceholdersEnabled(): boolean {
 export const ADSENSE_SCRIPT_SRC = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js';
 
 /**
- * The `ads.txt` body for the configured publisher, or null.
+ * The `ads.txt` body.
  *
- * Derived from the publisher id rather than stored separately, because the two must
- * agree and the record is otherwise a fixed string: `f08c47fec0942fa0` is Google's
- * own published certification authority id, identical for every AdSense publisher.
- * Nothing here is guessed — with no publisher id there is no record, and the route
- * returns 404 rather than serving something that looks valid and is not.
+ * Derived from the **verified account** rather than from the ad-serving variables, and
+ * that distinction is the whole design of this function.
+ *
+ * `ads.txt` answers "who is authorised to sell this site's inventory?". That is a
+ * statement about who owns the domain and which account may monetise it — the same kind
+ * of claim as the verification meta tag, and true from the moment the account is
+ * verified. It is not a statement that ads are running. Buyers and Google's own site
+ * review read this file *before* any ad is served, so gating it on the serving switch
+ * would withhold the record exactly when it is needed.
+ *
+ * So it follows `ADSENSE_VERIFICATION_ID`, and everything that could actually request
+ * an ad — `adsEnabled`, `AdSlot`, the script, the Content-Security-Policy — continues
+ * to be gated on `NEXT_PUBLIC_ADSENSE_CLIENT_ID`, which is unrelated to this and still
+ * unset. Publishing the record does not load anything.
+ *
+ * Nothing is guessed: the account id is the verified one, and `f08c47fec0942fa0` is
+ * Google's own published certification authority id, identical for every AdSense
+ * publisher. The publisher field is derived from the account id by dropping the `ca-`
+ * prefix, so the two cannot disagree.
  */
-export function adsTxtBody(): string | null {
-  const client = adsenseClientId();
-  if (!client) return null;
-  const publisher = client.replace(/^ca-/, '');
+export function adsTxtBody(): string {
+  const publisher = ADSENSE_VERIFICATION_ID.replace(/^ca-/, '');
   return `google.com, ${publisher}, DIRECT, f08c47fec0942fa0\n`;
 }
