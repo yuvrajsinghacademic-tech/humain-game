@@ -39,7 +39,11 @@ describe('the sitemap', () => {
   });
 
   it('is absolute throughout', () => {
-    for (const url of urls) expect(url).toMatch(/^https:\/\/www\.willyoubereplaced\.com/);
+    // The trailing (?:\/|$) is the hostname boundary. Anchored only at the front, this
+    // would also accept https://www.willyoubereplaced.com.evil.com/about.
+    for (const url of urls) {
+      expect(url).toMatch(/^https:\/\/www\.willyoubereplaced\.com(?:\/|$)/);
+    }
   });
 
   it('ranks the homepage above the documents', () => {

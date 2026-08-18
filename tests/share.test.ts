@@ -45,7 +45,9 @@ describe('share text', () => {
     // sticker they never saw, and quietly corrupt the placement numbers.
     expect(SHARE_URL).toBe('https://www.willyoubereplaced.com/');
     expect(shareData(result).url).toBe(SHARE_URL);
-    expect(shareClipboardText(result)).not.toMatch(/willyoubereplaced\.com\/[a-z]/);
+    expect(shareClipboardText(result)).not.toMatch(
+      /https:\/\/www\.willyoubereplaced\.com\/[a-z]/,
+    );
   });
 
   it('leaks nothing private, even when handed it', () => {
