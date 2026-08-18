@@ -14,8 +14,9 @@ import {
  * Two claims, and the second is the one worth having. The first is that the tag is
  * present and names the right account, because a truncated paste fails Google's fetch
  * silently and the symptom is an account that simply never verifies. The second is that
- * naming the account changed nothing else: no script, no ad unit, no ads.txt, no widened
- * policy. Verification and monetisation are separate switches, and this asserts that the
+ * naming the account changed nothing else that matters: no script, no ad unit, no widened
+ * policy. (ads.txt does publish, deliberately — it names the authorised owner rather than
+ * switching serving on.) Verification and monetisation are separate switches, and this asserts that the
  * first one being on leaves the second one off.
  */
 
@@ -88,9 +89,11 @@ describe('verifying ownership does not start advertising', () => {
     expect(adsEnabled('postgame')).toBe(false);
   });
 
-  it('leaves /ads.txt absent', () => {
-    expect(adsTxtBody()).toBeNull();
-    expect(adsTxt().status).toBe(404);
+  it('publishes ads.txt for the verified account, which is not the same as serving', () => {
+    // ads.txt declares who may sell this inventory. That is an ownership claim, true
+    // from verification onwards, and Google's site review reads it before any ad runs.
+    expect(adsTxtBody()).toBe('google.com, pub-5771510660460861, DIRECT, f08c47fec0942fa0\n');
+    expect(adsTxt().status).toBe(200);
   });
 
   it('loads no advertising script and enables no auto ads', () => {

@@ -208,7 +208,7 @@ index, and an advertising review can assess.
 | `/about` · `/how-it-works` · `/darry` · `/behind-the-game` · `/faq` | Editorial documents, server-rendered, no client JavaScript of their own |
 | `/privacy` · `/privacy-choices` · `/terms` | Legal, written against the actual implementation rather than from a template |
 | `/sitemap.xml` · `/robots.txt` · `/opengraph-image` | Indexing and the social preview card |
-| `/ads.txt` | 404 until a real AdSense publisher id is configured |
+| `/ads.txt` | One `DIRECT` record naming the verified AdSense account |
 
 They share the game's palette and typography but drop everything that fights reading:
 no glitch, no displacement, no animated grain. The atmosphere is one static scanline
@@ -243,8 +243,10 @@ and no answer, timing, profile or verdict is in it.
 ### Advertising
 
 None is running. With no AdSense variables configured, no script loads, no Google host
-is contacted, `/ads.txt` is a 404, every ad surface renders nothing, and the CSP is
-byte-identical to the ad-free one. Ads may only ever appear on editorial pages and in
+is contacted, every ad surface renders nothing, and the CSP is byte-identical to the
+ad-free one. `/ads.txt` does publish one record, naming the verified account — that
+declares who is *authorised* to sell this inventory, which is true from verification
+onwards and is separate from whether anything is served. Ads may only ever appear on editorial pages and in
 the post-game area, never during play — enforced by a test that reads the source of
 every gameplay module. See **`docs/MONETIZATION.md`**.
 

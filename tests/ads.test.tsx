@@ -3,6 +3,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { AdSlot } from '@/components/ads/AdSlot';
 import { adSlotId, adsEnabled, adsTxtBody, adsenseClientId } from '@/lib/ads/config';
+import { ADSENSE_VERIFICATION_ID } from '@/lib/ads/verification';
 
 /**
  * Advertising.
@@ -57,8 +58,10 @@ describe('with nothing configured', () => {
     expect(adsEnabled('postgame')).toBe(false);
   });
 
-  it('serves no ads.txt, rather than a record that looks valid', () => {
-    expect(adsTxtBody()).toBeNull();
+  it('still publishes ads.txt, because that names the owner rather than running ads', () => {
+    // ads.txt follows the verified account, not the serving switch: it says which
+    // account may sell this inventory, which is true before anything is served.
+    expect(adsTxtBody()).toBe('google.com, pub-5771510660460861, DIRECT, f08c47fec0942fa0\n');
   });
 });
 
@@ -149,14 +152,25 @@ describe('the development placeholder', () => {
 });
 
 describe('ads.txt', () => {
-  it('is derived from the publisher id, with Google’s own certification id', () => {
-    process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID = 'ca-pub-1234567890123456';
-    expect(adsTxtBody()).toBe('google.com, pub-1234567890123456, DIRECT, f08c47fec0942fa0\n');
+  it('is the verified account, with Google’s own certification id', () => {
+    expect(adsTxtBody()).toBe('google.com, pub-5771510660460861, DIRECT, f08c47fec0942fa0\n');
   });
 
-  it('is absent again the moment the id is removed', () => {
-    delete process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
-    expect(adsTxtBody()).toBeNull();
+  it('is derived from the account id rather than stored twice', () => {
+    // The publisher field is the account id minus its `ca-` prefix, so the two cannot
+    // drift apart and there is no second value to update.
+    expect(adsTxtBody()).toContain(ADSENSE_VERIFICATION_ID.replace(/^ca-/, ''));
+    expect(adsTxtBody()).not.toContain(ADSENSE_VERIFICATION_ID);
+  });
+
+  it('does not follow the ad-serving switch in either direction', () => {
+    // Unset, set to something else, or malformed: the record names the verified owner
+    // regardless, because it is not a statement about serving.
+    for (const value of [undefined, 'ca-pub-1234567890123456', 'YOUR_PUBLISHER_ID']) {
+      if (value === undefined) delete process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
+      else process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID = value;
+      expect(adsTxtBody(), String(value)).toBe('google.com, pub-5771510660460861, DIRECT, f08c47fec0942fa0\n');
+    }
   });
 });
 

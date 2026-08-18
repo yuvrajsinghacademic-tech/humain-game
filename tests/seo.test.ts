@@ -118,25 +118,38 @@ describe('/ads.txt', () => {
     else process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID = ORIGINAL;
   });
 
-  it('is absent while no publisher account is configured', async () => {
-    const response = adsTxt();
-    expect(response.status).toBe(404);
-    // Not an empty 200 and not a fabricated record: the file simply does not exist.
-    expect(await response.text()).not.toMatch(/pub-/);
-  });
-
-  it('serves the real record once a publisher id is set', async () => {
-    process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID = 'ca-pub-1234567890123456';
+  it('serves exactly the verified account’s record', async () => {
     const response = adsTxt();
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toContain('text/plain');
-    expect(await response.text()).toBe(
-      'google.com, pub-1234567890123456, DIRECT, f08c47fec0942fa0\n',
-    );
+    // The whole file, byte for byte — a stray second line or a missing newline is the
+    // kind of thing a buyer's parser rejects silently.
+    expect(await response.text()).toBe('google.com, pub-5771510660460861, DIRECT, f08c47fec0942fa0\n');
   });
 
-  it('stays absent for a malformed publisher id', async () => {
-    process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID = 'YOUR_PUBLISHER_ID';
-    expect(adsTxt().status).toBe(404);
+  it('is one line, DIRECT, with Google’s published certification id', async () => {
+    const body = await adsTxt().text();
+    const lines = body.trimEnd().split('\n');
+    expect(lines).toHaveLength(1);
+    const [domain, publisher, relationship, certification] = lines[0].split(',').map((f) => f.trim());
+    expect(domain).toBe('google.com');
+    expect(publisher).toBe('pub-5771510660460861');
+    expect(relationship).toBe('DIRECT');
+    expect(certification).toBe('f08c47fec0942fa0');
+  });
+
+  it('names the owner regardless of whether serving is switched on', async () => {
+    // Publishing the record is not the same act as running ads, so an unset, wrong or
+    // malformed serving variable must not change what this file says.
+    for (const value of ['YOUR_PUBLISHER_ID', 'ca-pub-1234567890123456']) {
+      process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID = value;
+      const response = adsTxt();
+      expect(response.status, value).toBe(200);
+      expect(await response.text(), value).toBe('google.com, pub-5771510660460861, DIRECT, f08c47fec0942fa0\n');
+    }
+  });
+
+  it('is cacheable but correctable within the hour', () => {
+    expect(adsTxt().headers.get('cache-control')).toBe('public, max-age=3600');
   });
 });
