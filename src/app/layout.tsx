@@ -1,5 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import { Analytics } from '@vercel/analytics/next';
+import {
+  ADSENSE_VERIFICATION_ID,
+  ADSENSE_VERIFICATION_META_NAME,
+} from '@/lib/ads/verification';
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site/config';
 import '@/styles/globals.css';
 
@@ -35,9 +39,17 @@ export const metadata: Metadata = {
     title: 'hum(ai)n — will you be replaced?',
     description: SITE_DESCRIPTION,
   },
-  // The whole piece is one dark surface; tell the browser so form controls and
-  // scrollbars match instead of flashing white.
-  other: { 'color-scheme': 'dark' },
+  other: {
+    // The whole piece is one dark surface; tell the browser so form controls and
+    // scrollbars match instead of flashing white.
+    'color-scheme': 'dark',
+    /*
+     * AdSense site-ownership verification. A claim about who owns this domain, and
+     * nothing more — no script is loaded, no ad unit exists, no Google host is
+     * contacted, and /ads.txt still returns 404. See src/lib/ads/verification.ts.
+     */
+    [ADSENSE_VERIFICATION_META_NAME]: ADSENSE_VERIFICATION_ID,
+  },
 };
 
 export const viewport: Viewport = {
