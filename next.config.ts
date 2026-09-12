@@ -1,7 +1,6 @@
 import type { NextConfig } from 'next';
 
 const isProduction = process.env.NODE_ENV === 'production';
-const allowSeedRoute = process.env.NEXT_PUBLIC_ALLOW_SEED === 'true';
 
 /**
  * Advertising hosts, added to the policy only when advertising is actually
@@ -91,23 +90,6 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-
-  /**
-   * Existing E2E journeys historically enter the game at `/?seed=...`. Keep that
-   * address working only in the explicitly seeded test build. Production never sets
-   * NEXT_PUBLIC_ALLOW_SEED, so its `/` always remains the publisher-content homepage.
-   * A rewrite preserves the browser URL while serving the exact `/play` implementation.
-   */
-  async rewrites() {
-    if (!allowSeedRoute) return [];
-    return [
-      {
-        source: '/',
-        has: [{ type: 'query', key: 'seed' }],
-        destination: '/play',
-      },
-    ];
-  },
 
   async headers() {
     return [
