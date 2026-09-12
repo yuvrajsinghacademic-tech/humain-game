@@ -91,7 +91,7 @@ describe.each(PAGES)('$path', ({ Page, metadata, file, path }) => {
 
   it('offers a way back into the game', () => {
     render(<Page />);
-    expect(screen.getByTestId('masthead-play')).toHaveAttribute('href', '/');
+    expect(screen.getByTestId('masthead-play')).toHaveAttribute('href', '/play');
     expect(screen.getByTestId('masthead-home')).toHaveAttribute('href', '/');
   });
 
