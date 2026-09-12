@@ -55,7 +55,7 @@ export function Masthead({ current }: { current: string }) {
       <Link
         className={styles.mark}
         href="/"
-        aria-label={`${SITE_NAME} — play`}
+        aria-label={`${SITE_NAME} — home`}
         data-testid="masthead-home"
       >
         <MarkGlyphs />
@@ -64,7 +64,7 @@ export function Masthead({ current }: { current: string }) {
       <nav className={styles.mastheadNav} aria-label="Site">
         <Link
           className={`${styles.mastheadLink} ${styles.play}`}
-          href="/"
+          href="/play"
           data-testid="masthead-play"
         >
           Play
