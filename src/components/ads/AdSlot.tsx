@@ -1,26 +1,23 @@
 'use client';
 
 /**
- * One advertising surface.
+ * The site's single kind of advertising surface.
  *
- * Every ad on this site goes through this component, and it starts from "no".
+ * Every ad goes through this component, and it starts from "no".
  *
- *  - With no publisher id **and** no slot id for this surface it renders `null` —
- *    no element, no reserved space, no script tag, no network request.
- *  - In development, and only when `NEXT_PUBLIC_AD_PLACEHOLDERS=true`, it draws an
- *    empty labelled outline so the spacing around an ad can be judged. It still
- *    loads nothing and contacts nobody.
- *  - Fully configured, it loads the AdSense library **lazily, from here** rather
- *    than from a layout — so the script exists only on a page that is actually
- *    showing an ad, and never during the game.
+ *  - With no publisher id and no editorial slot id it renders `null`: no element,
+ *    reserved space, script tag, or network request.
+ *  - In development only, `NEXT_PUBLIC_AD_PLACEHOLDERS=true` draws an empty labelled
+ *    outline so article spacing can be judged without contacting Google.
+ *  - Fully configured, it loads AdSense lazily from the article that contains it,
+ *    never from the global layout.
  *
- * Where this may be used is a product decision, not a technical one, and it is
- * written down in one place: `docs/MONETIZATION.md`. In short — editorial pages,
- * below the article; and the post-game area, well below the reveal. Never on boot,
- * the menu, the warning, the assessment, the booth, a round transition, or the
- * ending reveal itself. `tests/ads.test.tsx` asserts the second list.
+ * This component is permitted only after substantial editorial publisher content.
+ * There is intentionally no advertising surface in the game, the ending, campaign
+ * routes, the homepage, or legal/support pages. `tests/ads.test.tsx` guards that
+ * boundary structurally.
  *
- * The label is real text, not a decoration: an ad has to be identifiable as an ad.
+ * The label is real text, not decoration: an ad has to be identifiable as an ad.
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -47,7 +44,8 @@ export function AdSlot({ surface, className = '' }: { surface: AdSurface; classN
   const live = adsEnabled(surface);
   const placeholder = !live && adPlaceholdersEnabled();
 
-  if (live && client && slot) return <LiveAd surface={surface} client={client} slot={slot} className={className} />;
+  if (live && client && slot)
+    return <LiveAd surface={surface} client={client} slot={slot} className={className} />;
   if (placeholder) return <PlaceholderAd surface={surface} className={className} />;
   return null;
 }
@@ -82,7 +80,11 @@ function LiveAd({
   }, [ready]);
 
   return (
-    <aside className={`${styles.slot} ${className}`} aria-label="Advertisement" data-testid={`ad-${surface}`}>
+    <aside
+      className={`${styles.slot} ${className}`}
+      aria-label="Advertisement"
+      data-testid={`ad-${surface}`}
+    >
       <p className={styles.label}>ADVERTISEMENT</p>
       <div className={styles.frame}>
         <ins
@@ -95,11 +97,6 @@ function LiveAd({
           data-full-width-responsive="true"
         />
       </div>
-      {/*
-        `afterInteractive` rather than `beforeInteractive`: nothing on this page waits
-        for an advertisement. The id is fixed so several units on one page share a
-        single library load.
-      */}
       <Script
         id="adsbygoogle-init"
         src={`${ADSENSE_SCRIPT_SRC}?client=${encodeURIComponent(client)}`}
@@ -111,12 +108,7 @@ function LiveAd({
   );
 }
 
-/**
- * A box, and nothing more.
- *
- * Development only. It exists so a layout can be judged with the space taken, and it
- * says what it is so nobody mistakes it for a working integration.
- */
+/** Development-only labelled box; never contacts Google. */
 function PlaceholderAd({ surface, className }: { surface: AdSurface; className: string }) {
   return (
     <aside

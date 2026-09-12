@@ -10,16 +10,13 @@
  * The sequence is staged rather than dumped: `Unfortunately.` lands alone, and
  * `You will be replaced.` arrives afterwards with the heavier glitch.
  *
- * **The aftermath is a fifth stage, and it is late on purpose.** Sharing, playing
- * again and — if it is ever configured — an advertisement all live below a rule that
- * does not exist while the verdict is landing. The reveal gets the screen to itself
- * for a beat first, and only then does the piece admit it is on a website. Nothing in
- * that section is allowed to compete with the two percentages: it is smaller, dimmer,
- * and a long way down.
+ * **The aftermath is a fifth stage, and it is late on purpose.** Sharing and playing
+ * again live below a rule that does not exist while the verdict is landing. The reveal
+ * gets the screen to itself for a beat first, and only then does the piece admit it is
+ * on a website. Advertising is intentionally excluded from the game and its ending.
  */
 
 import { useEffect, useState } from 'react';
-import { AdSlot } from '@/components/ads/AdSlot';
 import { Screen } from '@/components/Screen';
 import { endingCopy, endingNumbers } from '@/lib/behavior/ending';
 import type { DebriefReport, RoundRecord } from '@/types';
@@ -150,17 +147,6 @@ export function Ending({
               >
                 PLAY AGAIN
               </button>
-            </div>
-
-            {/*
-              The only advertising surface anywhere near the game, and it is below the
-              rule, below the share controls and below PLAY AGAIN, separated by a gap
-              large enough that it cannot be reached for by accident. With no AdSense
-              account configured it renders nothing at all — no element, no reserved
-              space, no script.
-            */}
-            <div className={styles.advert}>
-              <AdSlot surface="postgame" />
             </div>
           </section>
         ) : null}
